@@ -1,0 +1,24 @@
+name: Daily notify
+
+on:
+  schedule:
+    - cron: '0 1 * * *'     # 01:00 UTC = 08:00 sáng giờ Việt Nam
+  workflow_dispatch:         # cho phép bấm chạy thử thủ công
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Cài thư viện
+        run: npm install --no-audit --no-fund
+        working-directory: scripts
+      - name: Gửi thông báo
+        run: node notify.js
+        working-directory: scripts
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          SITE_URL: https://tiendz1.github.io/fresh-track/
