@@ -2,14 +2,19 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FreshTrack - Quản Lý & Tra Cứu Hạn Dùng Đám Mây</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>ChromaTech - Quản Lý & Tra Cứu Hạn Dùng Đám Mây</title>
+    <meta name="description" content="ChromaTech: tra cứu và nhắc nhở hạn dùng sản phẩm bằng mã QR.">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="ChromaTech - Tra cứu hạn dùng sản phẩm">
+    <meta property="og:description" content="Quét mã QR để xem hạn dùng, chất lượng sản phẩm và nhận nhắc nhở mỗi ngày.">
+    <meta property="og:image" content="https://tiendz1.github.io/fresh-track/icon-512.png">
     <!-- PWA: cài như ứng dụng -->
     <link rel="manifest" href="manifest.webmanifest">
     <meta name="theme-color" content="#059669">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="FreshTrack">
+    <meta name="apple-mobile-web-app-title" content="ChromaTech">
     <link rel="apple-touch-icon" href="icon-192.png">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com/3.4.17"></script>
@@ -59,10 +64,16 @@
         .glass-nav {
             backdrop-filter: blur(12px);
         }
-        #reader video {
-            object-fit: cover !important;
-            border-radius: 1rem;
-        }
+        /* Không ép object-fit: cover (làm lệch vùng quét → quét khó) */
+        #reader video { border-radius: 1rem; }
+        html, body { overscroll-behavior-y: contain; }
+        body { min-height: 100vh; min-height: 100dvh; padding-bottom: calc(3rem + env(safe-area-inset-bottom, 0px)); }
+        h1, h2, h3, h4 { overflow-wrap: anywhere; }
+        /* Hộp thoại luôn vừa màn hình, cuộn được khi màn hình thấp */
+        div[id$="Modal"] > div:first-child { max-height: calc(100dvh - 1.5rem); overflow-y: auto; overscroll-behavior: contain; }
+        /* Chống iOS tự phóng to khi bấm vào ô nhập */
+        @media (max-width: 640px) { input, select, textarea { font-size: 16px !important; } }
+        @media (pointer: coarse) { header button { min-height: 40px; } }
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -76,7 +87,7 @@
         }
     </style>
 </head>
-<body id="appBody" class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 min-h-screen flex flex-col pb-12 transition-colors duration-200">
+<body id="appBody" class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-200">
 
     <!-- Admin Mode Visual Banner Indicator -->
     <div id="adminModeBanner" class="hidden bg-emerald-700 text-white text-xs font-bold py-1.5 px-4 text-center tracking-wider flex items-center justify-center gap-2">
@@ -86,7 +97,7 @@
 
     <!-- Header / Top Bar -->
     <header class="sticky top-0 z-40 glass-nav bg-white/90 dark:bg-slate-800/90 border-b border-slate-200 dark:border-slate-700 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
             <!-- Logo / Brand & Live Clock -->
             <div class="flex items-center gap-4">
                 <a href="index.html" onclick="resetToAdminView(event)" class="flex items-center gap-3 group">
@@ -94,7 +105,7 @@
                         <i data-lucide="cloud-cog" class="w-6 h-6"></i>
                     </div>
                     <div>
-                        <h1 class="font-bold text-xl text-slate-900 dark:text-white leading-tight">FreshTrack</h1>
+                        <h1 class="font-bold text-lg sm:text-xl text-slate-900 dark:text-white leading-tight max-[380px]:hidden">ChromaTech</h1>
                         <p class="hidden sm:block text-xs text-slate-500 dark:text-slate-400 font-medium">Hệ thống Tra cứu Chất lượng Sản phẩm</p>
                     </div>
                 </a>
@@ -107,7 +118,7 @@
             </div>
 
             <!-- Right Nav Actions -->
-            <div class="flex items-center gap-2 sm:gap-3">
+            <div class="flex items-center gap-1.5 sm:gap-3">
                 <!-- Sync status indicator -->
                 <div id="syncBadge" class="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                     <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
@@ -137,9 +148,9 @@
 
                 <!-- Admin Auth Button Container -->
                 <div id="authContainer">
-                    <button id="loginBtn" onclick="openAdminLoginModal()" class="flex items-center gap-1.5 px-3.5 py-2 border border-slate-300 dark:border-slate-600 rounded-xl text-xs sm:text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                    <button id="loginBtn" onclick="openAdminLoginModal()" class="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 border border-slate-300 dark:border-slate-600 rounded-xl text-xs sm:text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
                         <i data-lucide="lock" class="w-4 h-4"></i>
-                        <span>Admin</span>
+                        <span class="max-[420px]:hidden">Admin</span>
                     </button>
                     <div id="adminBadge" class="hidden flex items-center gap-2 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200 px-3 py-1.5 rounded-xl text-xs font-bold border border-emerald-300 dark:border-emerald-700">
                         <span>👑 Quyền Admin</span>
@@ -175,7 +186,7 @@
                     <p class="text-xs sm:text-sm opacity-90 mt-1" id="publicStatusSub">Lấy thông tin trực tiếp từ cơ sở dữ liệu Firebase</p>
                 </div>
 
-                <div class="p-6 space-y-6">
+                <div class="p-4 sm:p-6 space-y-5 sm:space-y-6">
                     <!-- Title & Category -->
                     <div>
                         <div class="flex items-center gap-2 mb-1">
@@ -242,6 +253,7 @@
                         <p class="text-xs font-medium text-slate-400 mb-3">Mã QR truy cập trực tiếp cho sản phẩm này</p>
                         <div id="publicQrContainer" class="flex justify-center p-3 bg-white rounded-2xl border border-slate-200 dark:border-slate-700 w-max mx-auto shadow-sm"></div>
                         <p class="text-[11px] font-mono text-slate-400 mt-2 break-all" id="publicDirectUrl">URL: ...</p>
+                    <button onclick="shareCurrentProduct()" class="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600">📤 Chia sẻ sản phẩm</button>
                     </div>
                 </div>
             </div>
@@ -251,10 +263,10 @@
         <div id="adminView" class="space-y-6">
 
             <!-- Customer Hero Banner (Solid Tone style) -->
-            <div class="bg-emerald-700 rounded-3xl p-6 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="bg-emerald-700 rounded-3xl p-4 sm:p-6 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-4">
                 <div class="space-y-1.5 text-center md:text-left">
                     <span class="inline-block px-3 py-0.5 rounded-full bg-white/20 text-xs font-bold tracking-wide uppercase">Tra cứu Realtime</span>
-                    <h2 class="text-2xl font-bold tracking-tight">Hệ thống Tra cứu Chất lượng Sản phẩm</h2>
+                    <h2 class="text-xl sm:text-2xl font-bold tracking-tight">Hệ thống Tra cứu Chất lượng Sản phẩm</h2>
                     <p class="text-xs sm:text-sm text-emerald-100 max-w-xl">
                         Quét mã QR bằng Camera hoặc nhập mã sản phẩm bên dưới. Bạn cũng có thể đăng ký sản phẩm mới vào hệ thống!
                     </p>
@@ -304,43 +316,43 @@
             </div>
 
             <!-- Dashboard Overview Stats -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
+                <div class="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex items-center gap-3 sm:gap-4">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
                         <i data-lucide="boxes" class="w-6 h-6"></i>
                     </div>
                     <div>
-                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Tổng sản phẩm đã lưu</p>
+                        <p class="text-[11px] sm:text-xs leading-tight font-medium text-slate-500 dark:text-slate-400">Tổng sản phẩm đã lưu</p>
                         <h4 class="text-xl font-bold text-slate-900 dark:text-white" id="statTotal">0</h4>
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <div class="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex items-center gap-3 sm:gap-4">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                         <i data-lucide="check-circle-2" class="w-6 h-6"></i>
                     </div>
                     <div>
-                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Tươi ngon nhất</p>
+                        <p class="text-[11px] sm:text-xs leading-tight font-medium text-slate-500 dark:text-slate-400">Tươi ngon nhất</p>
                         <h4 class="text-xl font-bold text-emerald-600 dark:text-emerald-400" id="statFresh">0</h4>
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                <div class="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex items-center gap-3 sm:gap-4">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
                         <i data-lucide="clock" class="w-6 h-6"></i>
                     </div>
                     <div>
-                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Nên dùng ngay</p>
+                        <p class="text-[11px] sm:text-xs leading-tight font-medium text-slate-500 dark:text-slate-400">Nên dùng ngay</p>
                         <h4 class="text-xl font-bold text-amber-600 dark:text-amber-400" id="statEatSoon">0</h4>
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                <div class="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex items-center gap-3 sm:gap-4">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
                         <i data-lucide="alert-triangle" class="w-6 h-6"></i>
                     </div>
                     <div>
-                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Đã hết hạn</p>
+                        <p class="text-[11px] sm:text-xs leading-tight font-medium text-slate-500 dark:text-slate-400">Đã hết hạn</p>
                         <h4 class="text-xl font-bold text-rose-600 dark:text-rose-400" id="statExpired">0</h4>
                     </div>
                 </div>
@@ -348,15 +360,15 @@
 
             <!-- Toolbar / Filters / Add Product -->
             <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex flex-col lg:flex-row gap-4 items-center justify-between">
-                <div class="flex flex-col sm:flex-row sm:flex-wrap gap-3 w-full lg:w-auto flex-1">
+                <div class="grid grid-cols-2 sm:flex sm:flex-row sm:flex-wrap gap-2 sm:gap-3 w-full lg:w-auto flex-1">
                     <!-- Search input -->
-                    <div class="relative flex-1 min-w-[180px]">
+                    <div class="relative col-span-2 sm:col-span-1 flex-1 min-w-[180px]">
                         <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
                         <input type="text" id="searchInput" oninput="onSearchInput()" placeholder="Tìm tên sản phẩm, ID mã QR, mã vạch..." class="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all">
                     </div>
                     
                     <!-- Category Filter -->
-                    <select id="categoryFilter" onchange="onSearchInput()" class="bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-sm rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+                    <select id="categoryFilter" onchange="onSearchInput()" class="w-full sm:w-auto min-w-0 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-sm rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
                         <option value="ALL">Tất cả danh mục</option>
                         <option value="Sữa & Chế phẩm">Sữa & Chế phẩm</option>
                         <option value="Thịt tươi sống">Thịt tươi sống</option>
@@ -369,7 +381,7 @@
                     </select>
 
                     <!-- Status Filter -->
-                    <select id="statusFilter" onchange="onFilterChanged()" class="bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-sm rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+                    <select id="statusFilter" onchange="onFilterChanged()" class="w-full sm:w-auto min-w-0 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-sm rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
                         <option value="ALL">Tất cả trạng thái</option>
                         <option value="FRESH">Tươi ngon nhất</option>
                         <option value="EAT_SOON">Nên dùng ngay</option>
@@ -377,7 +389,7 @@
                     </select>
 
                     <!-- Quick time filter -->
-                    <select id="quickFilter" onchange="onFilterChanged()" class="bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-sm rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+                    <select id="quickFilter" onchange="onFilterChanged()" class="w-full sm:w-auto min-w-0 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-sm rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
                         <option value="ALL">Mọi thời hạn</option>
                         <option value="EXPIRED">Đã hết hạn</option>
                         <option value="24H">Hết hạn trong 24 giờ</option>
@@ -386,14 +398,15 @@
                     </select>
 
                     <!-- Sort -->
-                    <select id="sortFilter" onchange="onFilterChanged()" class="bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-sm rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+                    <select id="sortFilter" onchange="onFilterChanged()" class="w-full sm:w-auto min-w-0 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-sm rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
                         <option value="URGENT">Sắp xếp: Khẩn cấp nhất</option>
                         <option value="LATEST">Sắp xếp: Hạn xa nhất</option>
                     </select>
                 </div>
 
                 <!-- Add New Product Button -->
-                <button id="addNewBtn" onclick="openAddModal()" class="w-full sm:w-auto flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm transition-all active:scale-95 shrink-0">
+                <button onclick="manualRefresh()" title="Làm mới dữ liệu" class="hidden sm:flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600">⟳ <span class="lg:inline hidden">Làm mới</span></button>
+                    <button id="addNewBtn" onclick="openAddModal()" class="w-full sm:w-auto flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm transition-all active:scale-95 shrink-0">
                     <i data-lucide="plus" class="w-4 h-4"></i>
                     <span id="addNewBtnText">Đăng ký mã QR sản phẩm</span>
                 </button>
@@ -610,6 +623,13 @@
             <!-- Camera Display -->
             <div id="reader" class="w-full bg-slate-900 rounded-2xl overflow-hidden border-2 border-dashed border-emerald-500/50 min-h-[250px] flex items-center justify-center text-slate-400 text-xs"></div>
 
+            <!-- Công cụ camera: đèn pin + thu phóng (chỉ hiện nếu thiết bị hỗ trợ) -->
+            <div id="scanTools" class="items-center gap-3 mt-3" style="display:none">
+                <button id="torchBtn" onclick="toggleTorch()" style="display:none" class="px-3 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600">🔦 Đèn</button>
+                <div id="zoomWrap" class="flex-1 items-center gap-2 text-xs text-slate-600 dark:text-slate-300" style="display:none">
+                    <span>🔍</span><input id="zoomRange" type="range" class="flex-1" oninput="setScanZoom(this.value)">
+                </div>
+            </div>
             <p class="text-xs text-slate-500 dark:text-slate-400 text-center mt-3">Đưa mã QR vào giữa khung camera để tra cứu ngay lập tức.</p>
 
             <!-- Manual Lookup Input -->
@@ -648,7 +668,19 @@
         import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         // Vẽ icon an toàn: nếu thư viện icon không tải được, app vẫn chạy bình thường (chỉ thiếu icon)
-        function safeIcons() { try { if (window.lucide) window.lucide.createIcons(); } catch (e) { console.warn("Lucide error:", e); } }
+        function safeIcons() { try { if (window.lucide) window.lucide.createIcons(); } catch (e) { console.warn("Lucide error:", e); } labelIconButtons(); }
+
+        // Gắn nhãn cho các nút chỉ có icon (trợ năng + gợi ý khi rê chuột)
+        const ICON_LABELS = { 'eye': 'Xem thông tin sản phẩm', 'edit-3': 'Sửa sản phẩm', 'trash-2': 'Xóa sản phẩm', 'x': 'Đóng', 'moon': 'Chuyển sang giao diện tối', 'sun': 'Chuyển sang giao diện sáng', 'copy': 'Sao chép liên kết', 'external-link': 'Mở liên kết', 'bell': 'Thông báo' };
+        function labelIconButtons() {
+            document.querySelectorAll('button:not([aria-label])').forEach(btn => {
+                if (btn.textContent.trim() && !/^[\s·]*$/.test(btn.textContent)) return;
+                const ic = btn.querySelector('[data-lucide], svg');
+                if (!ic) return;
+                const name = ic.getAttribute('data-lucide') || [...ic.classList].find(c => c.startsWith('lucide-') && c !== 'lucide')?.slice(7);
+                if (name && ICON_LABELS[name]) { btn.setAttribute('aria-label', ICON_LABELS[name]); if (!btn.title) btn.title = ICON_LABELS[name]; }
+            });
+        }
 
         // Cấu hình Firebase dự án fresh-track-dt
         const firebaseConfig = {
@@ -692,7 +724,7 @@
         let fbApp = null, deferredInstall = null, pushSyncTimer = null;
 
         // >>> DÁN "Key pair" (VAPID key) lấy từ Firebase Console → Project settings → Cloud Messaging → Web Push certificates <<<
-        const VAPID_KEY = "BEJCnSG8N_2575cenpVlsJ24EG-e1dsLTIvbCHJ0chHzZjlrh8sl4rHOv_E7d-gmSqkQj9VKgUW6VGUeSR5iPRU";
+        const VAPID_KEY = "DÁN_VAPID_KEY_VÀO_ĐÂY";
         const PUSH_TOKEN_KEY = 'freshtrack_push_token';
         const FCM_URL = "https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js";
 
@@ -1105,15 +1137,104 @@ function updateSyncBadge(status, text) {
             setLoading(true);
             initFirebase();
             setInterval(tick, 60000);
+            initPullToRefresh();
+            initNetworkBanner();
             if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(e => console.warn('SW:', e));
         };
+
+        // ---- Làm mới dữ liệu (dùng cho vuốt xuống) ----
+        window.refreshData = async function() {
+            if (isAdminLoggedIn) await Promise.all([loadAdminPage(true), refreshAdminStats()]);
+            else await loadCustomerProducts();
+            const pv = document.getElementById('publicCustomerView');
+            if (!pv.classList.contains('hidden') && currentPublicProd) {
+                const fresh = products.find(p => p.id === currentPublicProd.id) || (db ? await fetchProductRemote(currentPublicProd.id) : null);
+                if (fresh) { currentPublicProd = fresh; fillPublicStatus(fresh); }
+            }
+        }
+
+        // ---- Vuốt xuống để làm mới như trên web (không cần thoát ra vào lại) ----
+        function initPullToRefresh() {
+            const THRESH = 70, MAX = 120;
+            let startY = 0, pulling = false, dist = 0, busy = false;
+            const ind = document.createElement('div');
+            ind.setAttribute('aria-hidden', 'true');
+            ind.style.cssText = 'position:fixed;top:0;left:50%;z-index:70;pointer-events:none;transform:translate(-50%,-80px);transition:transform .2s;';
+            ind.innerHTML = '<div class="flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-300 shadow-lg border border-slate-200 dark:border-slate-600 text-xs font-bold" style="margin-top:calc(env(safe-area-inset-top,0px) + 12px)"><span id="ptrIcon" style="display:inline-block;transition:transform .2s">↓</span><span id="ptrText">Kéo để làm mới</span></div>';
+            document.body.appendChild(ind);
+            const icon = ind.querySelector('#ptrIcon'), text = ind.querySelector('#ptrText');
+            const blocked = () => !!document.querySelector('div[id$="Modal"]:not(.hidden)');
+            const atTop = () => (window.scrollY || document.documentElement.scrollTop || 0) <= 0;
+            const hide = () => { ind.style.transition = 'transform .2s'; ind.style.transform = 'translate(-50%,-80px)'; icon.classList.remove('animate-spin'); icon.textContent = '↓'; icon.style.transform = 'none'; };
+
+            window.addEventListener('touchstart', e => {
+                if (busy || e.touches.length !== 1 || !atTop() || blocked() || e.target.closest('input,select,textarea')) { pulling = false; return; }
+                startY = e.touches[0].clientY; pulling = true; dist = 0;
+            }, { passive: true });
+
+            window.addEventListener('touchmove', e => {
+                if (!pulling) return;
+                const dy = e.touches[0].clientY - startY;
+                if (dy <= 0 || !atTop()) { if (dist > 0) hide(); dist = 0; if (dy < 0) pulling = false; return; }
+                dist = Math.min(MAX, dy * 0.5);
+                if (e.cancelable) e.preventDefault();
+                ind.style.transition = 'none';
+                ind.style.transform = `translate(-50%,${dist - 80}px)`;
+                icon.style.transform = dist >= THRESH ? 'rotate(180deg)' : 'none';
+                text.textContent = dist >= THRESH ? 'Thả để làm mới' : 'Kéo để làm mới';
+            }, { passive: false });
+
+            window.addEventListener('touchend', async () => {
+                if (!pulling) return;
+                pulling = false;
+                if (dist >= THRESH && !busy) {
+                    busy = true;
+                    ind.style.transition = 'transform .2s'; ind.style.transform = 'translate(-50%,0)';
+                    icon.style.transform = 'none'; icon.textContent = '⟳'; icon.classList.add('animate-spin'); text.textContent = 'Đang làm mới…';
+                    try { await window.refreshData(); showToast("Đã cập nhật dữ liệu mới nhất", "success"); }
+                    catch (err) { showToast("Làm mới thất bại, thử lại sau", "error"); }
+                    finally { busy = false; hide(); }
+                } else hide();
+                dist = 0;
+            });
+            window.addEventListener('touchcancel', () => { pulling = false; dist = 0; hide(); });
+        }
+
+        window.manualRefresh = async function() {
+            showToast("Đang làm mới dữ liệu...", "info");
+            try { await refreshData(); showToast("Đã cập nhật dữ liệu mới nhất", "success"); }
+            catch (e) { showToast("Làm mới thất bại, thử lại sau", "error"); }
+        }
+
+        window.shareCurrentProduct = async function() {
+            if (!currentPublicProd) return;
+            const url = getProductDirectUrl(currentPublicProd.id);
+            try {
+                if (navigator.share) { await navigator.share({ title: 'ChromaTech: ' + currentPublicProd.name, text: `Hạn dùng của "${currentPublicProd.name}"`, url }); return; }
+            } catch (e) { if (e && e.name === 'AbortError') return; }
+            try { await navigator.clipboard.writeText(url); showToast("Đã sao chép liên kết sản phẩm", "success"); }
+            catch (e) { showToast(url, "info"); }
+        }
+
+        // Thanh báo khi mất mạng; có mạng lại thì tự làm mới
+        function initNetworkBanner() {
+            const bar = document.createElement('div');
+            bar.setAttribute('role', 'status');
+            bar.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:65;transform:translateY(100%);transition:transform .25s;padding-bottom:env(safe-area-inset-bottom,0px);pointer-events:none';
+            bar.innerHTML = '<div class="bg-slate-800 text-white text-xs font-semibold text-center py-2 px-3">📴 Bạn đang offline - đang hiển thị dữ liệu đã lưu trên máy</div>';
+            document.body.appendChild(bar);
+            const upd = () => { bar.style.transform = navigator.onLine ? 'translateY(100%)' : 'translateY(0)'; };
+            window.addEventListener('online', () => { upd(); showToast("Đã có mạng trở lại", "success"); refreshData().catch(() => {}); });
+            window.addEventListener('offline', upd);
+            upd();
+        }
 
         // ---- Cài web thành ứng dụng (PWA) ----
         window.addEventListener('beforeinstallprompt', e => {
             e.preventDefault(); deferredInstall = e;
             const b = document.getElementById('installBtn'); b.classList.remove('hidden'); b.classList.add('flex');
         });
-        window.addEventListener('appinstalled', () => { document.getElementById('installBtn').classList.add('hidden'); showToast("Đã cài FreshTrack vào thiết bị!", "success"); });
+        window.addEventListener('appinstalled', () => { document.getElementById('installBtn').classList.add('hidden'); showToast("Đã cài ChromaTech vào thiết bị!", "success"); });
         window.installApp = async function() {
             if (!deferredInstall) return;
             deferredInstall.prompt();
@@ -1216,7 +1337,7 @@ function updateSyncBadge(status, text) {
             else if (/iphone|ipad|ipod/i.test(navigator.userAgent)) showToast("iPhone: bấm Chia sẻ → Thêm vào Màn hình chính, mở ứng dụng từ biểu tượng đó rồi bật lại thông báo.", "warning");
             else showToast("Thiết bị chưa hỗ trợ thông báo nền; vẫn nhắc khi đang mở web.", "warning");
             const sent = await checkAndNotify(true);
-            if (!sent) sendNotification("FreshTrack", "Đã bật nhắc nhở. Hiện chưa có sản phẩm nào cần chú ý ✅", "");
+            if (!sent) sendNotification("ChromaTech", "Đã bật nhắc nhở. Hiện chưa có sản phẩm nào cần chú ý ✅", "");
         }
 
         function updateNotifUI() {
@@ -1263,12 +1384,12 @@ function updateSyncBadge(status, text) {
             if (c(2)) parts.push(`${c(2)} còn dưới 24 giờ`);
             if (c(1)) parts.push(`${c(1)} nên dùng ngay`);
             const names = hits.slice(0, 3).map(h => h.p.name).join(', ') + (hits.length > 3 ? '…' : '');
-            return sendNotification('FreshTrack: cần chú ý hạn dùng', parts.join(' · ') + '\n' + names, hits.length === 1 ? getProductDirectUrl(hits[0].p.id) : '');
+            return sendNotification('ChromaTech: cần chú ý hạn dùng', parts.join(' · ') + '\n' + names, hits.length === 1 ? getProductDirectUrl(hits[0].p.id) : '');
         }
 
         async function sendNotification(title, body, url) {
             try {
-                const n = new Notification(title, { body, tag: 'freshtrack-alert', renotify: true });
+                const n = new Notification(title, { body, tag: 'chromatech-alert', renotify: true });
                 n.onclick = () => { window.focus(); if (url) window.location.href = url; n.close(); };
                 return true;
             } catch (e) {
@@ -1440,7 +1561,7 @@ function updateSyncBadge(status, text) {
             document.getElementById('publicDirectUrl').innerText = directUrl;
             const qrBox = document.getElementById('publicQrContainer');
             qrBox.innerHTML = '';
-            new QRCode(qrBox, { text: directUrl, width: 120, height: 120, colorDark: "#0f172a", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H });
+            new QRCode(qrBox, { text: directUrl, width: 160, height: 160, colorDark: "#0f172a", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
 
             safeIcons();
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1864,7 +1985,7 @@ function updateSyncBadge(status, text) {
                 height: 180,
                 colorDark : "#0f172a",
                 colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
+                correctLevel : QRCode.CorrectLevel.M
             });
 
             document.getElementById('qrModal').classList.remove('hidden');
@@ -1892,23 +2013,71 @@ function updateSyncBadge(status, text) {
         // WEB CAMERA SCANNER
         window.openScannerModal = function() {
             document.getElementById('scannerModal').classList.remove('hidden');
-            setTimeout(() => {
+            document.getElementById('scanTools').style.display = 'none';
+            setTimeout(startScanner, 300);
+        }
+
+        let scanCaps = null, torchOn = false;
+
+        async function startScanner() {
+            const reader = document.getElementById('reader');
+            try {
                 if (!html5QrcodeScanner) {
-                    html5QrcodeScanner = new Html5Qrcode("reader");
+                    const F = window.Html5QrcodeSupportedFormats;
+                    html5QrcodeScanner = new Html5Qrcode("reader", {
+                        // Chỉ dò các định dạng cần thiết → giải mã nhanh hơn
+                        formatsToSupport: F ? [F.QR_CODE, F.EAN_13, F.EAN_8, F.UPC_A, F.CODE_128, F.CODE_39] : undefined,
+                        // Dùng bộ dò mã gốc của trình duyệt (rất nhạy, quét được từ xa) nếu có
+                        experimentalFeatures: { useBarCodeDetectorIfSupported: true },
+                        verbose: false
+                    });
                 }
-                const config = { fps: 10, qrbox: { width: 220, height: 220 } };
-                html5QrcodeScanner.start(
-                    { facingMode: "environment" }, 
-                    config, 
-                    onScanSuccess, 
-                    onScanFailure
-                ).catch(err => {
-                    document.getElementById('reader').innerText = "Không mở được camera. Vui lòng thử nhập thủ công bên dưới.";
-                });
-            }, 300);
+                const qrbox = (w, h) => { const side = Math.floor(Math.min(w, h) * 0.8); return { width: side, height: side }; };   // khung quét lớn
+                try {
+                    await html5QrcodeScanner.start({ facingMode: "environment" }, {
+                        fps: 20, qrbox, disableFlip: true,
+                        videoConstraints: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 }, advanced: [{ focusMode: "continuous" }] }
+                    }, onScanSuccess, onScanFailure);
+                } catch (e1) {
+                    console.warn("Scanner: thử lại cấu hình cơ bản", e1);
+                    await html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 15, qrbox }, onScanSuccess, onScanFailure);
+                }
+                setupScanTools();
+            } catch (err) {
+                console.error("Scanner error:", err);
+                reader.innerText = "Không mở được camera. Vui lòng cấp quyền camera hoặc nhập thủ công bên dưới.";
+            }
+        }
+
+        function setupScanTools() {
+            const tools = document.getElementById('scanTools'), torchBtn = document.getElementById('torchBtn');
+            const zoomWrap = document.getElementById('zoomWrap'), range = document.getElementById('zoomRange');
+            let any = false; torchOn = false; scanCaps = null;
+            try {
+                scanCaps = html5QrcodeScanner.getRunningTrackCameraCapabilities();
+                const z = scanCaps.zoomFeature();
+                if (z.isSupported()) {
+                    range.min = z.min(); range.max = z.max(); range.step = z.step() || 0.1;
+                    const v = Math.min(z.max(), Math.max(z.min(), 1.5));   // mặc định phóng nhẹ để quét được từ xa hơn
+                    range.value = v; z.apply(v);
+                    zoomWrap.style.display = 'flex'; any = true;
+                }
+                if (scanCaps.torchFeature().isSupported()) { torchBtn.style.display = 'block'; any = true; }
+            } catch (e) { console.warn("Camera capabilities:", e); }
+            tools.style.display = any ? 'flex' : 'none';
+        }
+
+        window.setScanZoom = function(v) { try { scanCaps.zoomFeature().apply(parseFloat(v)); } catch (e) {} }
+        window.toggleTorch = async function() {
+            try {
+                torchOn = !torchOn;
+                await scanCaps.torchFeature().apply(torchOn);
+                document.getElementById('torchBtn').classList.toggle('bg-amber-200', torchOn);
+            } catch (e) { torchOn = !torchOn; }
         }
 
         window.closeScannerModal = function() {
+            document.getElementById('scanTools').style.display = 'none';
             if (html5QrcodeScanner && html5QrcodeScanner.isScanning) {
                 html5QrcodeScanner.stop().then(() => {
                     document.getElementById('scannerModal').classList.add('hidden');
@@ -1921,6 +2090,7 @@ function updateSyncBadge(status, text) {
         }
 
         function onScanSuccess(decodedText) {
+            if (navigator.vibrate) navigator.vibrate(80);
             closeScannerModal();
             showToast(`Quét thành công`, "success");
             let extractedId = decodedText;

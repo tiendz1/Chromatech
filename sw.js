@@ -1,5 +1,5 @@
-// FreshTrack service worker: nhận Web Push (FCM) khi web đóng + mở offline cơ bản
-const CACHE = 'freshtrack-shell-v1';
+// ChromaTech service worker: nhận Web Push (FCM) khi web đóng + mở offline cơ bản
+const CACHE = 'chromatech-shell-v1';
 
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil((async () => {
@@ -24,11 +24,11 @@ self.addEventListener('push', event => {
     let payload = {};
     try { payload = event.data ? event.data.json() : {}; } catch (e) { payload = { data: { body: event.data ? event.data.text() : '' } }; }
     const d = Object.assign({}, payload.notification || {}, payload.data || {});
-    event.waitUntil(self.registration.showNotification(d.title || 'FreshTrack', {
+    event.waitUntil(self.registration.showNotification(d.title || 'ChromaTech', {
         body: d.body || '',
         icon: 'icon-192.png',
         badge: 'icon-192.png',
-        tag: d.tag || 'freshtrack-daily',
+        tag: d.tag || 'chromatech-daily',
         renotify: true,
         data: { url: d.url || './' }
     }));
