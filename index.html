@@ -304,7 +304,12 @@
                         <p class="text-xs font-medium text-slate-400 mb-3">Mã QR truy cập trực tiếp cho sản phẩm này</p>
                         <div id="publicQrContainer" class="flex justify-center p-3 bg-white rounded-2xl border border-slate-200 dark:border-slate-700 w-max mx-auto shadow-sm"></div>
                         <p class="text-[11px] font-mono text-slate-400 mt-2 break-all" id="publicDirectUrl">URL: ...</p>
-                    <button onclick="shareCurrentProduct()" class="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600">📤 Chia sẻ sản phẩm</button>
+                    <div class="mt-3 flex flex-wrap items-center justify-center gap-2">
+                        <button onclick="downloadHighResQr(currentPublicProd?.id, currentPublicProd?.name)" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-brand-600 hover:bg-brand-700 text-white shadow-sm transition-colors">
+                            <i data-lucide="download" class="w-4 h-4"></i> Tải ảnh QR
+                        </button>
+                        <button onclick="shareCurrentProduct()" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600">📤 Chia sẻ sản phẩm</button>
+                    </div>
                     </div>
                 </div>
             </div>
@@ -629,12 +634,15 @@
                 <p class="text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-3 break-all max-w-full px-2" id="qrModalUrlText">URL...</p>
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-3 gap-2">
+                <button onclick="downloadHighResQr(activeQrId, activeQrName)" class="px-3 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors">
+                    <i data-lucide="download" class="w-4 h-4"></i> Tải ảnh
+                </button>
                 <button onclick="copyQrUrl()" class="px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors">
-                    <i data-lucide="copy" class="w-4 h-4"></i> Sao chép URL
+                    <i data-lucide="copy" class="w-4 h-4"></i> Sao chép
                 </button>
                 <button onclick="openTestUrl()" class="px-3 py-2 bg-brand-50 dark:bg-brand-950/50 hover:bg-brand-100 text-brand-700 dark:text-brand-300 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors">
-                    <i data-lucide="external-link" class="w-4 h-4"></i> Mở liên kết
+                    <i data-lucide="external-link" class="w-4 h-4"></i> Mở link
                 </button>
             </div>
         </div>
@@ -1609,7 +1617,7 @@ function updateSyncBadge(status, text) {
             document.getElementById('publicDirectUrl').innerText = directUrl;
             const qrBox = document.getElementById('publicQrContainer');
             qrBox.innerHTML = '';
-            new QRCode(qrBox, { text: directUrl, width: 160, height: 160, colorDark: "#001040", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
+            new QRCode(qrBox, { text: directUrl, width: 200, height: 200, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
 
             safeIcons();
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -2015,12 +2023,16 @@ function updateSyncBadge(status, text) {
         }
 
         // QR MODAL
+        let activeQrId = "", activeQrName = "";
+
         window.openQrModal = function(id) {
             const prod = products.find(p => p.id === id);
             if (!prod) return;
 
             const directUrl = getProductDirectUrl(prod.id);
             activeQrUrl = directUrl;
+            activeQrId = prod.id;
+            activeQrName = prod.name;
 
             document.getElementById('qrModalTitle').innerText = prod.name;
             document.getElementById('qrModalUrlText').innerText = directUrl;
@@ -2029,14 +2041,63 @@ function updateSyncBadge(status, text) {
             qrBox.innerHTML = '';
             new QRCode(qrBox, {
                 text: directUrl,
-                width: 180,
-                height: 180,
-                colorDark : "#001040",
+                width: 200,
+                height: 200,
+                colorDark : "#000000",
                 colorLight : "#ffffff",
                 correctLevel : QRCode.CorrectLevel.M
             });
 
             document.getElementById('qrModal').classList.remove('hidden');
+            safeIcons();
+        }
+
+        // Xuất ảnh PNG độ phân giải cao (600x650px) kèm viền trắng chuẩn (Quiet Zone) để quét nhạy 100%
+        window.downloadHighResQr = function(prodId, prodName) {
+            if (!prodId) return;
+            const directUrl = getProductDirectUrl(prodId);
+
+            const tempDiv = document.createElement('div');
+            new QRCode(tempDiv, {
+                text: directUrl,
+                width: 500,
+                height: 500,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            setTimeout(() => {
+                const srcCanvas = tempDiv.querySelector('canvas');
+                if (!srcCanvas) {
+                    showToast("Không thể tạo ảnh QR, vui lòng thử lại", "error");
+                    return;
+                }
+
+                const pad = 50;
+                const labelHeight = 50;
+                const outCanvas = document.createElement('canvas');
+                outCanvas.width = srcCanvas.width + pad * 2;
+                outCanvas.height = srcCanvas.height + pad * 2 + labelHeight;
+
+                const ctx = outCanvas.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, outCanvas.width, outCanvas.height);
+
+                ctx.drawImage(srcCanvas, pad, pad);
+
+                ctx.fillStyle = '#0f172a';
+                ctx.font = 'bold 22px Inter, Arial, sans-serif';
+                ctx.textAlign = 'center';
+                const label = `${prodName || 'Sản phẩm'} (${prodId})`;
+                ctx.fillText(label.slice(0, 42), outCanvas.width / 2, srcCanvas.height + pad + 34);
+
+                const link = document.createElement('a');
+                link.download = `QR-${prodId}.png`;
+                link.href = outCanvas.toDataURL('image/png');
+                link.click();
+                showToast(`Đã tải xuống ảnh QR-${prodId}.png`, "success");
+            }, 50);
         }
 
         window.closeQrModal = function() {
