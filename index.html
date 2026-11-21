@@ -674,12 +674,9 @@
             <!-- Camera Display -->
             <div id="reader" class="w-full bg-slate-900 rounded-2xl overflow-hidden border-2 border-dashed border-brand-500/50 min-h-[250px] flex items-center justify-center text-slate-400 text-xs"></div>
 
-            <!-- Công cụ camera: đèn pin + thu phóng (chỉ hiện nếu thiết bị hỗ trợ) -->
-            <div id="scanTools" class="items-center gap-3 mt-3" style="display:none">
-                <button id="torchBtn" onclick="toggleTorch()" style="display:none" class="px-3 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600">🔦 Đèn</button>
-                <div id="zoomWrap" class="flex-1 items-center gap-2 text-xs text-slate-600 dark:text-slate-300" style="display:none">
-                    <span>🔍</span><input id="zoomRange" type="range" class="flex-1" oninput="setScanZoom(this.value)">
-                </div>
+            <!-- Công cụ camera: đèn pin hỗ trợ quét thiếu sáng -->
+            <div id="scanTools" class="justify-center mt-3" style="display:none">
+                <button id="torchBtn" onclick="toggleTorch()" style="display:none" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600">🔦 Bật / Tắt đèn pin</button>
             </div>
             <p class="text-xs text-slate-500 dark:text-slate-400 text-center mt-3">Đưa mã QR vào giữa khung camera để tra cứu ngay lập tức.</p>
 
@@ -2076,22 +2073,41 @@ function updateSyncBadge(status, text) {
                 if (!html5QrcodeScanner) {
                     const F = window.Html5QrcodeSupportedFormats;
                     html5QrcodeScanner = new Html5Qrcode("reader", {
-                        // Chỉ dò các định dạng cần thiết → giải mã nhanh hơn
+                        // Chỉ dò các định dạng cần thiết -> giảm tải CPU, tăng tốc độ bắt nét cực nhanh
                         formatsToSupport: F ? [F.QR_CODE, F.EAN_13, F.EAN_8, F.UPC_A, F.CODE_128, F.CODE_39] : undefined,
-                        // Dùng bộ dò mã gốc của trình duyệt (rất nhạy, quét được từ xa) nếu có
+                        // Ưu tiên bộ giải mã phần cứng gốc (BarcodeDetector) ngang các app chuyên dụng
                         experimentalFeatures: { useBarCodeDetectorIfSupported: true },
                         verbose: false
                     });
                 }
-                const qrbox = (w, h) => { const side = Math.floor(Math.min(w, h) * 0.8); return { width: side, height: side }; };   // khung quét lớn
+                // Vùng quét rộng 90% khung hình giúp bắt mã tức thì mà không cần căn chỉnh quá khắt khe
+                const qrbox = (w, h) => {
+                    const side = Math.max(180, Math.floor(Math.min(w, h) * 0.9));
+                    return { width: side, height: side };
+                };
+                const scanConfig = {
+                    fps: 30,
+                    qrbox,
+                    disableFlip: false
+                };
                 try {
-                    await html5QrcodeScanner.start({ facingMode: "environment" }, {
-                        fps: 20, qrbox, disableFlip: true,
-                        videoConstraints: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 }, advanced: [{ focusMode: "continuous" }] }
-                    }, onScanSuccess, onScanFailure);
+                    await html5QrcodeScanner.start(
+                        { facingMode: "environment" },
+                        {
+                            ...scanConfig,
+                            videoConstraints: {
+                                facingMode: { ideal: "environment" },
+                                width: { min: 640, ideal: 1280, max: 1920 },
+                                height: { min: 480, ideal: 720, max: 1080 },
+                                advanced: [{ focusMode: "continuous" }]
+                            }
+                        },
+                        onScanSuccess,
+                        onScanFailure
+                    );
                 } catch (e1) {
-                    console.warn("Scanner: thử lại cấu hình cơ bản", e1);
-                    await html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 15, qrbox }, onScanSuccess, onScanFailure);
+                    console.warn("Scanner: chuyển sang cấu hình tương thích", e1);
+                    await html5QrcodeScanner.start({ facingMode: "environment" }, scanConfig, onScanSuccess, onScanFailure);
                 }
                 setupScanTools();
             } catch (err) {
@@ -2102,23 +2118,17 @@ function updateSyncBadge(status, text) {
 
         function setupScanTools() {
             const tools = document.getElementById('scanTools'), torchBtn = document.getElementById('torchBtn');
-            const zoomWrap = document.getElementById('zoomWrap'), range = document.getElementById('zoomRange');
-            let any = false; torchOn = false; scanCaps = null;
+            torchOn = false; scanCaps = null;
             try {
                 scanCaps = html5QrcodeScanner.getRunningTrackCameraCapabilities();
-                const z = scanCaps.zoomFeature();
-                if (z.isSupported()) {
-                    range.min = z.min(); range.max = z.max(); range.step = z.step() || 0.1;
-                    const v = Math.min(z.max(), Math.max(z.min(), 1.5));   // mặc định phóng nhẹ để quét được từ xa hơn
-                    range.value = v; z.apply(v);
-                    zoomWrap.style.display = 'flex'; any = true;
+                if (scanCaps && scanCaps.torchFeature && scanCaps.torchFeature().isSupported()) {
+                    torchBtn.style.display = 'inline-block';
+                    tools.style.display = 'flex';
+                    return;
                 }
-                if (scanCaps.torchFeature().isSupported()) { torchBtn.style.display = 'block'; any = true; }
             } catch (e) { console.warn("Camera capabilities:", e); }
-            tools.style.display = any ? 'flex' : 'none';
+            tools.style.display = 'none';
         }
-
-        window.setScanZoom = function(v) { try { scanCaps.zoomFeature().apply(parseFloat(v)); } catch (e) {} }
         window.toggleTorch = async function() {
             try {
                 torchOn = !torchOn;
