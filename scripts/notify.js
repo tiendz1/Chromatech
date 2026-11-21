@@ -50,10 +50,10 @@ async function main() {
         messages.push({
             token: data.token || doc.id,
             data: {
-                title: 'FreshTrack: cần chú ý hạn dùng',
+                title: 'ChromaTech: cần chú ý hạn dùng',
                 body: `${parts.join(' · ')}\n${names}`,
                 url: hits.length === 1 ? `${SITE_URL}?id=${encodeURIComponent(hits[0].id)}` : SITE_URL,
-                tag: 'freshtrack-daily'
+                tag: 'chromatech-daily'
             },
             webpush: { headers: { Urgency: 'high', TTL: '86400' } }
         });
