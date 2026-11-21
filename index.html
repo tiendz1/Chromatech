@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FreshTrack - Quản Lý & Tra Cứu Hạn Dùng Đám Mây</title>
+    <!-- PWA: cài như ứng dụng -->
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#059669">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="FreshTrack">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com/3.4.17"></script>
     <script>
@@ -19,10 +26,25 @@
         }
     </script>
     <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@1.73.0"></script>
     <script>
-        // Dự phòng: nếu CDN chính lỗi thì tải Lucide từ jsDelivr (bắt buộc cố định phiên bản)
-        if (!window.lucide) document.write('<script src="https://cdn.jsdelivr.net/npm/lucide@1.73.0"><\/script>');
+        // Tải Lucide với nhiều nguồn dự phòng. Sau khi kiểm tra, hãy thay "latest" bằng số phiên bản cụ thể (xem hướng dẫn ghim phiên bản).
+        (function () {
+            var LUCIDE_VERSION = 'latest';
+            var urls = [
+                'https://unpkg.com/lucide@' + LUCIDE_VERSION + '/dist/umd/lucide.min.js',
+                'https://cdn.jsdelivr.net/npm/lucide@' + LUCIDE_VERSION + '/dist/umd/lucide.min.js',
+                'https://unpkg.com/lucide@' + LUCIDE_VERSION
+            ];
+            function load(i) {
+                if (window.lucide || i >= urls.length) return;
+                var el = document.createElement('script');
+                el.src = urls[i];
+                el.onload = function () { if (!window.lucide) load(i + 1); };
+                el.onerror = function () { load(i + 1); };
+                document.head.appendChild(el);
+            }
+            load(0);
+        })();
     </script>
     <!-- QRCode.js Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -97,6 +119,9 @@
                     <i id="themeIcon" data-lucide="moon" class="w-4 h-4"></i>
                 </button>
 
+               <button id="installBtn" onclick="installApp()" class="hidden items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow">
+                    <span>⬇️</span><span class="hidden sm:inline">Cài ứng dụng</span>
+                </button>
                 <!-- Daily Notification Toggle -->
                 <button id="notifToggleBtn" onclick="toggleDailyNotification()" class="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all border border-slate-200 dark:border-slate-600">
                     <i data-lucide="bell" id="notifIcon" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
@@ -664,17 +689,25 @@
         let customerItems = [], customerToken = 0, customerCache = readCache();
         let needIndex = false, indexLink = '', indexToastShown = false;
         let currentPublicProd = null, tickCount = 0, searchTimer = null;
+        let fbApp = null, deferredInstall = null, pushSyncTimer = null;
+
+        // >>> DÁN "Key pair" (VAPID key) lấy từ Firebase Console → Project settings → Cloud Messaging → Web Push certificates <<<
+        const VAPID_KEY = "BEJCnSG8N_2575cenpVlsJ24EG-e1dsLTIvbCHJ0chHzZjlrh8sl4rHOv_E7d-gmSqkQj9VKgUW6VGUeSR5iPRU";
+        const PUSH_TOKEN_KEY = 'freshtrack_push_token';
+        const FCM_URL = "https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js";
 
         // Khởi tạo Firebase Firestore
         function initFirebase() {
             try {
                 const app = initializeApp(firebaseConfig);
+                fbApp = app;
                 db = getFirestore(app);
                 auth = getAuth(app);
 
                 updateSyncBadge('online', '🟢 Đã kết nối Cloud');
                 // Lắng nghe trạng thái đăng nhập; dữ liệu sản phẩm được tải sau khi biết người dùng là ai
                 onAuthStateChanged(auth, handleAuthStateChanged);
+                if (notificationsEnabled && isPushConfigured()) setTimeout(enablePush, 3000);   // làm mới token nếu bị đổi
             } catch (err) {
                 console.error("Firebase Connection Error:", err);
                 updateSyncBadge('offline', '🔴 Lỗi kết nối Cloud');
@@ -686,6 +719,7 @@
             if (!deviceScannedIds.includes(id)) {
                 deviceScannedIds.push(id);
                 localStorage.setItem('freshtrack_scanned_ids', JSON.stringify(deviceScannedIds));
+                schedulePushSync();
             }
         }
 
@@ -775,7 +809,7 @@
                 else if (r.state === 'error' && customerCache[r.id]) next.push(customerCache[r.id]);
                 else delete customerCache[r.id];
             });
-            if (idsChanged) localStorage.setItem('freshtrack_scanned_ids', JSON.stringify(deviceScannedIds));
+            if (idsChanged) { localStorage.setItem('freshtrack_scanned_ids', JSON.stringify(deviceScannedIds)); schedulePushSync(); }
             if (!next.length && results.some(r => r.state === 'error')) showToast("Không tải được dữ liệu, vui lòng kiểm tra mạng", "warning");
             writeCache();
             customerItems = next;
@@ -1071,7 +1105,55 @@ function updateSyncBadge(status, text) {
             setLoading(true);
             initFirebase();
             setInterval(tick, 60000);
+            if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(e => console.warn('SW:', e));
         };
+
+        // ---- Cài web thành ứng dụng (PWA) ----
+        window.addEventListener('beforeinstallprompt', e => {
+            e.preventDefault(); deferredInstall = e;
+            const b = document.getElementById('installBtn'); b.classList.remove('hidden'); b.classList.add('flex');
+        });
+        window.addEventListener('appinstalled', () => { document.getElementById('installBtn').classList.add('hidden'); showToast("Đã cài FreshTrack vào thiết bị!", "success"); });
+        window.installApp = async function() {
+            if (!deferredInstall) return;
+            deferredInstall.prompt();
+            await deferredInstall.userChoice;
+            deferredInstall = null;
+            document.getElementById('installBtn').classList.add('hidden');
+        }
+
+        // ---- Push qua Firebase Cloud Messaging: nhận thông báo kể cả khi KHÔNG mở web ----
+        function isPushConfigured() { return VAPID_KEY && !VAPID_KEY.startsWith('DÁN_'); }
+
+        async function enablePush() {
+            if (!isPushConfigured()) return 'noconfig';
+            if (!('serviceWorker' in navigator) || !('PushManager' in window)) return 'unsupported';
+            try {
+                const { getMessaging, getToken } = await import(FCM_URL);
+                const reg = await navigator.serviceWorker.register('sw.js');
+                await navigator.serviceWorker.ready;
+                const token = await getToken(getMessaging(fbApp), { vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
+                if (!token) return 'error';
+                localStorage.setItem(PUSH_TOKEN_KEY, token);
+                await syncPushIds();
+                return 'ok';
+            } catch (e) { console.error("Push error:", e); return 'error'; }
+        }
+
+        // Lưu token + danh sách ID sản phẩm của thiết bị này để server biết cần nhắc gì
+        async function syncPushIds() {
+            const token = localStorage.getItem(PUSH_TOKEN_KEY);
+            if (!token || !db) return;
+            try { await setDoc(doc(db, 'pushTokens', token), { token, ids: deviceScannedIds.slice(-100), updatedAt: new Date().toISOString() }); }
+            catch (e) { console.warn("Push sync:", e); }
+        }
+        function schedulePushSync() { clearTimeout(pushSyncTimer); pushSyncTimer = setTimeout(syncPushIds, 1500); }
+
+        async function disablePush() {
+            const token = localStorage.getItem(PUSH_TOKEN_KEY);
+            localStorage.removeItem(PUSH_TOKEN_KEY);
+            if (token && db) { try { await deleteDoc(doc(db, 'pushTokens', token)); } catch (e) {} }
+        }
 
         // Nút Back/Forward của trình duyệt: đồng bộ lại giao diện theo URL
         window.addEventListener('popstate', handleRoutingAndRender);
@@ -1111,6 +1193,7 @@ function updateSyncBadge(status, text) {
                 notificationsEnabled = false;
                 localStorage.setItem('freshtrack_notif', 'false');
                 updateNotifUI();
+                disablePush();
                 showToast("Đã tắt nhắc nhở", "info");
                 return;
             }
@@ -1127,7 +1210,11 @@ function updateSyncBadge(status, text) {
             notificationsEnabled = true;
             localStorage.setItem('freshtrack_notif', 'true');
             updateNotifUI();
-            showToast("Đã bật nhắc nhở hạn dùng!", "success");
+            const pushRes = await enablePush();
+            if (pushRes === 'ok') showToast("Đã bật thông báo hằng ngày: bạn sẽ nhận được cả khi không mở web!", "success");
+            else if (pushRes === 'noconfig') showToast("Đã bật nhắc nhở (chỉ khi đang mở web). Chủ web cần cài VAPID key để gửi thông báo nền.", "warning");
+            else if (/iphone|ipad|ipod/i.test(navigator.userAgent)) showToast("iPhone: bấm Chia sẻ → Thêm vào Màn hình chính, mở ứng dụng từ biểu tượng đó rồi bật lại thông báo.", "warning");
+            else showToast("Thiết bị chưa hỗ trợ thông báo nền; vẫn nhắc khi đang mở web.", "warning");
             const sent = await checkAndNotify(true);
             if (!sent) sendNotification("FreshTrack", "Đã bật nhắc nhở. Hiện chưa có sản phẩm nào cần chú ý ✅", "");
         }
