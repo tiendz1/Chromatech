@@ -1,7 +1,7 @@
 // Gửi thông báo hạn dùng hằng ngày qua Firebase Cloud Messaging (chạy bằng GitHub Actions)
 const admin = require('firebase-admin');
 
-const SITE_URL = process.env.SITE_URL || 'https://tiendz1.github.io/fresh-track/';
+const SITE_URL = process.env.SITE_URL || 'https://tiendz1.github.io/Chromatech/';
 const TZ = process.env.APP_TZ_OFFSET || '+07:00';                 // múi giờ của hạn dùng đã nhập (Việt Nam = +07:00)
 const FORCE = process.env.GITHUB_EVENT_NAME === 'workflow_dispatch';   // bấm "Run workflow" thủ công: luôn gửi, bỏ qua kiểm tra trùng
 
