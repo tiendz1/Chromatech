@@ -57,11 +57,11 @@ async function main() {
             if (c(3)) parts.push(`${c(3)} đã hết hạn`);
             if (c(2)) parts.push(`${c(2)} còn dưới 24 giờ`);
             if (c(1)) parts.push(`${c(1)} nên dùng ngay`);
-            title = 'ChromaTech: cần chú ý hạn dùng';
+            title = 'ChromaTech';
             body = `${parts.join(' · ')}\n${hits.slice(0, 3).map(h => h.p.name).join(', ')}${hits.length > 3 ? '…' : ''}`;
             if (hits.length === 1) url = `${SITE_URL}?id=${encodeURIComponent(hits[0].id)}`;
         } else {
-            title = 'ChromaTech: chào buổi sáng ☀️';
+            title = 'ChromaTech';
             body = `Bạn đang theo dõi ${tracked.length} sản phẩm, hôm nay chưa có sản phẩm nào cần chú ý.`;
         }
         messages.push({
