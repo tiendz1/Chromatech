@@ -2,12 +2,16 @@ name: Daily notify
 
 on:
   schedule:
-    - cron: '0 1 * * *'     # 01:00 UTC = 08:00 sáng giờ Việt Nam
-  workflow_dispatch:         # cho phép bấm chạy thử thủ công
+    # GitHub hay chạy TRỄ 10-30 phút, nên hẹn sớm hơn 8h và có một lần dự phòng.
+    # Lần dự phòng tự bỏ qua nếu thiết bị đã nhận thông báo trong ngày.
+    - cron: '40 0 * * *'    # 00:40 UTC = 07:40 sáng giờ Việt Nam
+    - cron: '10 1 * * *'    # 01:10 UTC = 08:10 sáng giờ Việt Nam (dự phòng)
+  workflow_dispatch:         # cho phép bấm "Run workflow" để chạy thử thủ công
 
 jobs:
   notify:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -21,4 +25,4 @@ jobs:
         working-directory: scripts
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          SITE_URL: https://tiendz1.github.io/Chromatech/
+          SITE_URL: https://tiendz1.github.io/fresh-track/
