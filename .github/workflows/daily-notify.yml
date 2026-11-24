@@ -2,11 +2,11 @@ name: Daily notify
 
 on:
   schedule:
-    # GitHub hay chạy TRỄ 10-30 phút, nên hẹn sớm hơn 8h và có một lần dự phòng.
-    # Lần dự phòng tự bỏ qua nếu thiết bị đã nhận thông báo trong ngày.
-    - cron: '40 0 * * *'    # 00:40 UTC = 07:40 sáng giờ Việt Nam
-    - cron: '10 1 * * *'    # 01:10 UTC = 08:10 sáng giờ Việt Nam (dự phòng)
-  workflow_dispatch:         # cho phép bấm "Run workflow" để chạy thử thủ công
+    # GitHub chạy theo lịch thường TRỄ (có khi vài tiếng). Lần thứ hai chỉ là dự phòng,
+    # thiết bị nào đã nhận trong ngày sẽ được bỏ qua (không gửi trùng).
+    - cron: '40 0 * * *'    # 07:40 giờ Việt Nam
+    - cron: '10 1 * * *'    # 08:10 giờ Việt Nam
+  workflow_dispatch:         # bấm "Run workflow" để chạy thử thủ công (luôn gửi)
 
 jobs:
   notify:
