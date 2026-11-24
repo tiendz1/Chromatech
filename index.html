@@ -8,7 +8,7 @@
     <meta property="og:type" content="website">
     <meta property="og:title" content="ChromaTech - Tra cứu hạn dùng sản phẩm">
     <meta property="og:description" content="Quét mã QR để xem hạn dùng, chất lượng sản phẩm và nhận nhắc nhở mỗi ngày.">
-    <meta property="og:image" content="https://tiendz1.github.io/fresh-track/logo-full.png">
+    <meta property="og:image" content="https://tiendz1.github.io/Chromatech/logo-full.png">
     <!-- PWA: cài như ứng dụng -->
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" type="image/png" href="icon-192.png">
@@ -1476,7 +1476,7 @@ function updateSyncBadge(status, text) {
             else if (/iphone|ipad|ipod/i.test(navigator.userAgent)) showToast("iPhone: bấm Chia sẻ → Thêm vào Màn hình chính, mở ứng dụng từ biểu tượng đó rồi bật lại thông báo.", "warning");
             else showToast("Thiết bị chưa hỗ trợ thông báo nền; vẫn nhắc khi đang mở web.", "warning");
             const sent = await checkAndNotify(true);
-            if (!sent) sendNotification("ChromaTech", "Đã bật nhắc nhở. Hiện chưa có sản phẩm nào cần chú ý ✅", "");
+            if (!sent) sendNotification("Đã bật nhắc nhở ✅", "Hiện chưa có sản phẩm nào cần chú ý. Bạn sẽ nhận thông báo mỗi ngày.", "");
         }
 
         function updateNotifUI() {
@@ -1519,13 +1519,12 @@ function updateSyncBadge(status, text) {
             try { localStorage.setItem(NOTIF_KEY, JSON.stringify(notifiedMap)); } catch (e) {}
             if (!hits.length) return false;
             hits.sort((a, b) => b.lvl - a.lvl);
-            const c = l => hits.filter(h => h.lvl === l).length;
-            const parts = [];
-            if (c(3)) parts.push(`${c(3)} đã hết hạn`);
-            if (c(2)) parts.push(`${c(2)} còn dưới 24 giờ`);
-            if (c(1)) parts.push(`${c(1)} nên dùng ngay`);
-            const names = hits.slice(0, 3).map(h => h.p.name).join(', ') + (hits.length > 3 ? '…' : '');
-            return sendNotification('ChromaTech: cần chú ý hạn dùng', parts.join(' · ') + '\n' + names, hits.length === 1 ? getProductDirectUrl(hits[0].p.id) : '');
+            const LV = { 3: 'Đã hết hạn', 2: 'Còn dưới 24 giờ', 1: 'Nên dùng ngay' };
+            const nm = h => h.p.name || h.p.id;
+            if (hits.length === 1) return sendNotification(nm(hits[0]), LV[hits[0].lvl], getProductDirectUrl(hits[0].p.id));   // tên sản phẩm ở tiêu đề → hiển thị đậm
+            const title = hits.slice(0, 2).map(nm).join(' · ') + (hits.length > 2 ? ` +${hits.length - 2}` : '');
+            const body = hits.slice(0, 4).map(h => `• ${nm(h)}: ${LV[h.lvl]}`).join('\n') + (hits.length > 4 ? `\n… và ${hits.length - 4} sản phẩm khác` : '');
+            return sendNotification(title, body, '');
         }
 
         async function sendNotification(title, body, url) {
@@ -1561,7 +1560,7 @@ function updateSyncBadge(status, text) {
             } else if (now > bestBeforeDate) {
                 return { 
                     code: 'EAT_SOON', 
-                    label: 'NÊN DÙNG NGAY (Hết hạn ngon nhất)', 
+                    label: 'NÊN DÙNG NGAY', 
                     badgeBg: 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800', 
                     bannerBg: 'bg-amber-500'
                 };
