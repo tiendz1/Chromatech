@@ -18,6 +18,8 @@ const toMs = s => Date.parse(String(s).length === 16 ? `${s}:00${TZ}` : String(s
 const tzMin = (() => { const m = TZ.match(/([+-])(\d\d):(\d\d)/); return m ? (m[1] === '-' ? -1 : 1) * (+m[2] * 60 + +m[3]) : 420; })();
 const dayKey = new Date(Date.now() + tzMin * 60000).toISOString().slice(0, 10);   // ngày hiện tại theo giờ Việt Nam
 
+const LEVEL_TEXT = { 3: 'Đã hết hạn', 2: 'Còn dưới 24 giờ', 1: 'Nên dùng ngay' };
+
 // 3 = đã hết hạn, 2 = còn dưới 24 giờ, 1 = quá hạn ngon nhất (nên dùng ngay)
 function level(p, now) {
     const exp = toMs(p.expiry), bb = toMs(p.bestBefore);
@@ -52,16 +54,17 @@ async function main() {
 
         let title, body, url = SITE_URL;
         if (hits.length) {
-            const c = l => hits.filter(h => h.lvl === l).length;
-            const parts = [];
-            if (c(3)) parts.push(`${c(3)} đã hết hạn`);
-            if (c(2)) parts.push(`${c(2)} còn dưới 24 giờ`);
-            if (c(1)) parts.push(`${c(1)} nên dùng ngay`);
-            title = 'ChromaTech';
-            body = `${parts.join(' · ')}\n${hits.slice(0, 3).map(h => h.p.name).join(', ')}${hits.length > 3 ? '…' : ''}`;
-            if (hits.length === 1) url = `${SITE_URL}?id=${encodeURIComponent(hits[0].id)}`;
+            const nm = h => h.p.name || h.id;
+            if (hits.length === 1) {
+                title = nm(hits[0]);                                   // tên sản phẩm ở tiêu đề → tự hiển thị chữ đậm
+                body = LEVEL_TEXT[hits[0].lvl];
+                url = `${SITE_URL}?id=${encodeURIComponent(hits[0].id)}`;
+            } else {
+                title = hits.slice(0, 2).map(nm).join(' · ') + (hits.length > 2 ? ` +${hits.length - 2}` : '');
+                body = hits.slice(0, 4).map(h => `• ${nm(h)}: ${LEVEL_TEXT[h.lvl]}`).join('\n') + (hits.length > 4 ? `\n… và ${hits.length - 4} sản phẩm khác` : '');
+            }
         } else {
-            title = 'ChromaTech';
+            title = 'Mọi sản phẩm đều ổn ✅';
             body = `Bạn đang theo dõi ${tracked.length} sản phẩm, hôm nay chưa có sản phẩm nào cần chú ý.`;
         }
         messages.push({
