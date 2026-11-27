@@ -1273,6 +1273,7 @@ function updateSyncBadge(status, text) {
             setInterval(tick, 60000);
             initPullToRefresh();
             initNetworkBanner();
+            initInstallUI();
             if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(e => console.warn('SW:', e));
         };
 
@@ -1372,13 +1373,105 @@ function updateSyncBadge(status, text) {
             e.preventDefault(); deferredInstall = e;
             const b = document.getElementById('installBtn'); b.classList.remove('hidden'); b.classList.add('flex');
         });
-        window.addEventListener('appinstalled', () => { document.getElementById('installBtn').classList.add('hidden'); showToast("Đã cài ChromaTech vào thiết bị!", "success"); });
-        window.installApp = async function() {
-            if (!deferredInstall) return;
-            deferredInstall.prompt();
-            await deferredInstall.userChoice;
-            deferredInstall = null;
+        // ---- Cài ứng dụng dễ dàng trên mọi hệ điều hành ----
+        const UA = navigator.userAgent;
+        const IS_IOS = /iphone|ipad|ipod/i.test(UA) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        const IS_IPAD = /ipad/i.test(UA) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        const IS_ANDROID = /android/i.test(UA);
+        const IOS_OTHER_BROWSER = /CriOS|FxiOS|EdgiOS|OPiOS/i.test(UA);
+        const IN_APP = /FBAN|FBAV|FB_IAB|Instagram|Zalo|Line\/|TikTok|musical_ly|MicroMessenger|; wv\)/i.test(UA);   // trình duyệt nhúng trong Zalo/Facebook/TikTok...
+        const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        const INSTALL_DISMISS_KEY = 'chromatech_install_dismissed';
+
+        window.addEventListener('appinstalled', () => {
+            deferredInstall = null; closeInstallSheet();
             document.getElementById('installBtn').classList.add('hidden');
+            showToast("Đã cài ChromaTech vào thiết bị!", "success");
+        });
+
+        // Bấm nút: Android/máy tính hiện hộp cài đặt ngay (1 chạm); máy khác mở hướng dẫn đúng với thiết bị
+        window.installApp = async function() {
+            if (deferredInstall) {
+                deferredInstall.prompt();
+                const r = await deferredInstall.userChoice;
+                deferredInstall = null;
+                if (r && r.outcome === 'accepted') closeInstallSheet();
+                return;
+            }
+            openInstallSheet();
+        }
+
+        function closeInstallSheet(rememberDismiss) {
+            const el = document.getElementById('installSheet');
+            if (el) el.remove();
+            if (rememberDismiss) localStorage.setItem(INSTALL_DISMISS_KEY, String(Date.now()));
+        }
+
+        window.copyInstallLink = async function() {
+            const url = location.origin + location.pathname;
+            try { await navigator.clipboard.writeText(url); showToast("Đã sao chép liên kết. Hãy dán vào trình duyệt để mở.", "success"); }
+            catch (e) { showToast(url, "info"); }
+        }
+
+        window.openInChrome = function() {   // Android: thoát khỏi Zalo/Facebook, mở bằng Chrome
+            location.href = `intent://${location.host}${location.pathname}?install=1#Intent;scheme=https;package=com.android.chrome;end`;
+        }
+
+        function openInstallSheet() {
+            if (isStandalone()) { showToast("ChromaTech đã được cài trên thiết bị này rồi!", "info"); return; }
+            closeInstallSheet();
+            let title = "Cài ChromaTech vào máy", body = "", actions = "", arrow = "";
+            const btn = (cls, js, text) => `<button onclick="${js}" class="w-full py-3 rounded-2xl font-bold text-sm ${cls}">${text}</button>`;
+            const primary = "bg-pumpkin-600 hover:bg-pumpkin-700 text-white shadow-md", ghost = "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200";
+            const step = (n, t) => `<li class="flex gap-3 items-start"><span class="w-7 h-7 shrink-0 rounded-full bg-brand-700 text-white text-sm font-bold flex items-center justify-center">${n}</span><span class="pt-0.5">${t}</span></li>`;
+
+            if (deferredInstall) {
+                body = `<p class="text-sm text-slate-600 dark:text-slate-300">Mở nhanh như ứng dụng thật, nhận nhắc hạn dùng mỗi ngày. Chỉ cần <b>1 chạm</b>.</p>`;
+                actions = btn(primary, "installApp()", "⬇️ Cài đặt ngay");
+            } else if (IN_APP) {
+                title = "Hãy mở bằng trình duyệt để cài";
+                if (IS_IOS) {
+                    body = `<ol class="space-y-3 text-sm text-slate-700 dark:text-slate-200">${step(1, "Bấm nút <b>⋯</b> hoặc biểu tượng <b>la bàn</b> ở góc màn hình")}${step(2, "Chọn <b>Mở bằng Safari</b> (Open in Safari)")}${step(3, "Làm tiếp theo hướng dẫn trong Safari")}</ol>`;
+                    actions = btn(ghost, "copyInstallLink()", "📋 Hoặc sao chép liên kết");
+                } else {
+                    body = `<p class="text-sm text-slate-600 dark:text-slate-300">Bạn đang mở trong một ứng dụng khác (Zalo, Facebook...), nên chưa cài được. Bấm nút dưới để mở bằng Chrome.</p>`;
+                    actions = (IS_ANDROID ? btn(primary, "openInChrome()", "🌐 Mở bằng Chrome") : "") + btn(ghost, "copyInstallLink()", "📋 Sao chép liên kết");
+                }
+            } else if (IS_IOS) {
+                body = `<ol class="space-y-3 text-sm text-slate-700 dark:text-slate-200">
+                    ${step(1, IS_IPAD ? "Bấm nút <b>Chia sẻ</b> (ô vuông có mũi tên ↑) ở <b>góc trên bên phải</b>" : (IOS_OTHER_BROWSER ? "Bấm nút <b>Chia sẻ</b> (ô vuông có mũi tên ↑) ở <b>thanh địa chỉ phía trên</b>" : "Bấm nút <b>Chia sẻ</b> (ô vuông có mũi tên ↑) ở <b>thanh dưới cùng</b> của Safari"))}
+                    ${step(2, "Kéo xuống, chọn <b>Thêm vào Màn hình chính</b>")}
+                    ${step(3, "Bấm <b>Thêm</b>. Xong! Mở ChromaTech từ màn hình chính.")}</ol>
+                    <p class="mt-3 text-xs text-slate-500 dark:text-slate-400">Cần iPhone dùng iOS 16.4 trở lên để nhận thông báo từ ứng dụng.</p>`;
+                if (!IS_IPAD) arrow = IOS_OTHER_BROWSER ? `<div class="fixed top-2 right-6 text-4xl animate-bounce pointer-events-none">👆</div>` : `<div class="fixed bottom-1 left-1/2 -translate-x-1/2 text-4xl animate-bounce pointer-events-none">👇</div>`;
+            } else {
+                body = `<ol class="space-y-3 text-sm text-slate-700 dark:text-slate-200">${step(1, "Mở menu của trình duyệt (<b>⋮</b> hoặc <b>≡</b>)")}${step(2, "Chọn <b>Cài đặt ứng dụng</b> / <b>Install</b> hoặc <b>Thêm vào màn hình chính</b>")}${step(3, "Xác nhận để hoàn tất")}</ol>
+                    <p class="mt-3 text-xs text-slate-500 dark:text-slate-400">Gợi ý: dùng Chrome hoặc Edge để cài chỉ với 1 chạm.</p>`;
+            }
+            actions += btn(ghost, "closeInstallSheet(true)", "Để sau");
+
+            const el = document.createElement('div');
+            el.id = 'installSheet';
+            el.className = 'fixed inset-0 z-[80] flex items-end sm:items-center justify-center bg-slate-950/60 p-3';
+            el.addEventListener('click', e => { if (e.target === el) closeInstallSheet(true); });
+            el.innerHTML = `<div class="w-full max-w-md bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-3xl shadow-2xl p-5 space-y-4" style="margin-bottom:env(safe-area-inset-bottom,0px)">
+                <div class="flex items-center gap-3">
+                    <img src="logo.png" alt="" width="48" height="48" class="w-12 h-12 rounded-2xl border border-slate-200 dark:border-slate-600 bg-white object-contain">
+                    <h3 class="text-lg font-extrabold leading-tight">${title}</h3>
+                </div>
+                ${body}
+                <div class="space-y-2">${actions}</div></div>${arrow}`;
+            document.body.appendChild(el);
+        }
+
+        function initInstallUI() {
+            if (isStandalone()) return;
+            const b = document.getElementById('installBtn');
+            b.classList.remove('hidden'); b.classList.add('flex');               // luôn có nút cài ở thanh đầu trang
+            if (new URLSearchParams(location.search).get('install')) { setTimeout(openInstallSheet, 1200); return; }   // link dành riêng cho việc cài: ?install=1
+            const last = +localStorage.getItem(INSTALL_DISMISS_KEY) || 0;
+            if (Date.now() - last < 7 * 864e5) return;                            // đã bấm "Để sau": 7 ngày không hỏi lại
+            setTimeout(() => { if (!isStandalone() && !document.querySelector('div[id$="Modal"]:not(.hidden)')) openInstallSheet(); }, 7000);
         }
 
         // ---- Push qua Firebase Cloud Messaging: nhận thông báo kể cả khi KHÔNG mở web ----
