@@ -1281,23 +1281,24 @@
 
         // Hàm mở Modal phát video hướng dẫn tải xuống cho 2 bản iOS
         window.openVideoModal = function(iosType) {
-            const modal = document.getElementById('videoTutorialModal');
-            const titleEl = document.getElementById('videoModalTitle');
-            const descEl = document.getElementById('videoModalDesc');
-            const videoEl = document.getElementById('tutorialVideoPlayer');
-            
-            if (iosType === 'new') {
-                titleEl.innerText = "Hướng dẫn tải xuống trên iOS từ 16.4 trở lên";
-                descEl.innerText = "Xem video hướng dẫn chi tiết các bước thêm ứng dụng vào Màn hình chính trên iOS phiên bản mới.";
-                videoEl.src = "video_1.mp4"; // video cho bản mới (hoặc video_2 tùy ý)
-            } else {
-                titleEl.innerText = "Hướng dẫn tải xuống trên iOS dưới 16.4";
-                descEl.innerText = "Xem video hướng dẫn chi tiết cách cài đặt ứng dụng trên các phiên bản iOS cũ hơn.";
-                videoEl.src = "video_2.mp4"; // video cho bản cũ
-            }
-            modal.classList.remove('hidden');
-            videoEl.play().catch(e => console.log("Auto-play prevented:", e));
-        }
+    const modal = document.getElementById('videoTutorialModal');
+    const titleEl = document.getElementById('videoModalTitle');
+    const descEl = document.getElementById('videoModalDesc');
+    const videoEl = document.getElementById('tutorialVideoPlayer');
+    
+    if (iosType === 'new') {
+        titleEl.innerText = "Hướng dẫn tải xuống trên iOS từ 26 trở lên";
+        descEl.innerText = "Xem video hướng dẫn chi tiết các bước thêm ứng dụng vào Màn hình chính.";
+        videoEl.src = encodeURI("Video Project 3.mp4");
+    } else {
+        titleEl.innerText = "Hướng dẫn tải xuống trên iOS dưới 26";
+        descEl.innerText = "Xem video hướng dẫn chi tiết cách cài đặt ứng dụng trên phiên bản iOS cũ hơn.";
+        videoEl.src = encodeURI("Video Project 4.mp4");
+    }
+    videoEl.load();
+    modal.classList.remove('hidden');
+    videoEl.play().catch(e => console.log("Chờ người dùng bấm phát:", e));
+}
 
         window.closeVideoModal = function() {
             const modal = document.getElementById('videoTutorialModal');
