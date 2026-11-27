@@ -1401,6 +1401,7 @@ function updateSyncBadge(status, text) {
             openInstallSheet();
         }
 
+        window.closeInstallSheet = closeInstallSheet;   // để nút onclick trong hộp cài đặt gọi được
         function closeInstallSheet(rememberDismiss) {
             const el = document.getElementById('installSheet');
             if (el) el.remove();
