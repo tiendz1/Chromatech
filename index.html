@@ -51,7 +51,6 @@
         @media (prefers-reduced-motion: reduce) { #splash *, #splash { animation: none !important; } #splash .sp-arc { stroke-dashoffset: 0; } }
     </style>
     <script>
-        // Ẩn màn hình chờ khi dữ liệu đã sẵn sàng (tối thiểu 0.9s để không bị chớp). Mở bằng link ?id=... thì chờ tới khi hiện sản phẩm.
         (function () {
             var t0 = Date.now(), hold = /[?&](id|code)=/.test(location.search), done = false;
             window.hideSplash = function (force) {
@@ -65,7 +64,7 @@
                     setTimeout(function () { el.remove(); }, 700);
                 }, Math.max(0, 900 - (Date.now() - t0)));
             };
-            setTimeout(function () { window.hideSplash(true); }, 8000);   // phòng khi tải quá lâu
+            setTimeout(function () { window.hideSplash(true); }, 8000);
         })();
     </script>
     <!-- Tailwind CSS -->
@@ -76,58 +75,10 @@
             theme: {
                 extend: {
                     colors: {
-                        "brand": {
-                            "50": "#eef3ff",
-                            "100": "#dde7fe",
-                            "200": "#bfd1fb",
-                            "300": "#93b0f5",
-                            "400": "#5b86ea",
-                            "500": "#2557d6",
-                            "600": "#0a3fb8",
-                            "700": "#003198",
-                            "800": "#00277a",
-                            "900": "#001d5c",
-                            "950": "#001040"
-                        },
-                        "pumpkin": {
-                            "50": "#fff4ec",
-                            "100": "#ffe6d3",
-                            "200": "#ffc9a0",
-                            "300": "#ffa268",
-                            "400": "#f47a30",
-                            "500": "#e05502",
-                            "600": "#c24a00",
-                            "700": "#9f3d00",
-                            "800": "#7d3000",
-                            "900": "#5c2400",
-                            "950": "#3a1500"
-                        },
-                        "azure": {
-                            "50": "#f2f9fd",
-                            "100": "#e2f2fa",
-                            "200": "#c6e5f4",
-                            "300": "#95cde8",
-                            "400": "#6bb5db",
-                            "500": "#3f98c6",
-                            "600": "#2d7aa6",
-                            "700": "#25617f",
-                            "800": "#214f66",
-                            "900": "#1d4254",
-                            "950": "#0f2836"
-                        },
-                        "slate": {
-                            "50": "#f8f5f2",
-                            "100": "#f0ebe7",
-                            "200": "#e6dfd9",
-                            "300": "#dad1ca",
-                            "400": "#9ba4b9",
-                            "500": "#5d6986",
-                            "600": "#4b5776",
-                            "700": "#223566",
-                            "800": "#11224f",
-                            "900": "#0a1740",
-                            "950": "#050d29"
-                        }
+                        "brand": { "50": "#eef3ff", "100": "#dde7fe", "200": "#bfd1fb", "300": "#93b0f5", "400": "#5b86ea", "500": "#2557d6", "600": "#0a3fb8", "700": "#003198", "800": "#00277a", "900": "#001d5c", "950": "#001040" },
+                        "pumpkin": { "50": "#fff4ec", "100": "#ffe6d3", "200": "#ffc9a0", "300": "#ffa268", "400": "#f47a30", "500": "#e05502", "600": "#c24a00", "700": "#9f3d00", "800": "#7d3000", "900": "#5c2400", "950": "#3a1500" },
+                        "azure": { "50": "#f2f9fd", "100": "#e2f2fa", "200": "#c6e5f4", "300": "#95cde8", "400": "#6bb5db", "500": "#3f98c6", "600": "#2d7aa6", "700": "#25617f", "800": "#214f66", "900": "#1d4254", "950": "#0f2836" },
+                        "slate": { "50": "#f8f5f2", "100": "#f0ebe7", "200": "#e6dfd9", "300": "#dad1ca", "400": "#9ba4b9", "500": "#5d6986", "600": "#4b5776", "700": "#223566", "800": "#11224f", "900": "#0a1740", "950": "#050d29" }
                     }
                 }
             }
@@ -135,7 +86,6 @@
     </script>
     <!-- Lucide Icons -->
     <script>
-        // Tải Lucide với nhiều nguồn dự phòng. Sau khi kiểm tra, hãy thay "latest" bằng số phiên bản cụ thể (xem hướng dẫn ghim phiên bản).
         (function () {
             var LUCIDE_VERSION = 'latest';
             var urls = [
@@ -161,33 +111,18 @@
     <!-- Google Fonts Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        .glass-nav {
-            backdrop-filter: blur(12px);
-        }
-        /* Không ép object-fit: cover (làm lệch vùng quét → quét khó) */
+        body { font-family: 'Inter', sans-serif; }
+        .glass-nav { backdrop-filter: blur(12px); }
         #reader video { border-radius: 1rem; }
         html, body { overscroll-behavior-y: contain; }
         body { min-height: 100vh; min-height: 100dvh; padding-bottom: calc(3rem + env(safe-area-inset-bottom, 0px)); }
         h1, h2, h3, h4 { overflow-wrap: anywhere; }
-        /* Hộp thoại luôn vừa màn hình, cuộn được khi màn hình thấp */
         div[id$="Modal"] > div:first-child { max-height: calc(100dvh - 1.5rem); overflow-y: auto; overscroll-behavior: contain; }
-        /* Chống iOS tự phóng to khi bấm vào ô nhập */
         @media (max-width: 640px) { input, select, textarea { font-size: 16px !important; } }
         @media (pointer: coarse) { header button { min-height: 40px; } }
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f0ebe7;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #c9bfb5;
-            border-radius: 4px;
-        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f0ebe7; }
+        ::-webkit-scrollbar-thumb { background: #c9bfb5; border-radius: 4px; }
     </style>
 </head>
 <body id="appBody" class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-200">
@@ -199,7 +134,6 @@
         <div class="sp-bar"><i></i></div>
     </div>
 
-    <!-- Admin Mode Visual Banner Indicator -->
     <div id="adminModeBanner" class="hidden bg-brand-700 text-white text-xs font-bold py-1.5 px-4 text-center tracking-wider flex items-center justify-center gap-2">
         <i data-lucide="shield-alert" class="w-4 h-4"></i>
         <span>CHẾ ĐỘ QUẢN TRỊ VIÊN (ADMINISTRATOR MODE) - ĐÃ BẬT TOÀN QUYỀN KIỂM DUYỆT & QUẢN LÝ KHO HÀNG</span>
@@ -208,7 +142,6 @@
     <!-- Header / Top Bar -->
     <header class="sticky top-0 z-40 glass-nav bg-white/90 dark:bg-slate-800/90 border-b border-slate-200 dark:border-slate-700 shadow-sm">
         <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
-            <!-- Logo / Brand & Live Clock -->
             <div class="flex items-center gap-4">
                 <a href="index.html" onclick="resetToAdminView(event)" class="flex items-center gap-3 group">
                     <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-md dark:shadow-none ring-2 ring-pumpkin-500 overflow-hidden group-hover:scale-105 transition-transform">
@@ -220,43 +153,37 @@
                     </div>
                 </a>
                 
-                <!-- Live Realtime Clock Widget -->
                 <div class="hidden md:flex items-center gap-1.5 px-3 py-1 bg-slate-100 dark:bg-slate-700/70 border border-slate-200 dark:border-slate-600 rounded-xl text-xs font-mono font-semibold text-slate-700 dark:text-slate-200">
                     <i data-lucide="clock" class="w-3.5 h-3.5 text-brand-600 dark:text-brand-400 animate-pulse"></i>
                     <span id="liveClockDisplay">--:--:-- --/--/----</span>
                 </div>
             </div>
 
-            <!-- Right Nav Actions -->
             <div class="flex items-center gap-1.5 sm:gap-3">
-                <!-- Sync status indicator -->
                 <div id="syncBadge" class="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                     <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
                     <span id="syncText">Đang kết nối Firebase...</span>
                 </div>
 
-                <!-- Dark Mode Toggle Button -->
                 <button onclick="toggleDarkMode()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
                     <i id="themeIcon" data-lucide="moon" class="w-4 h-4"></i>
                 </button>
 
-               <button id="installBtn" onclick="installApp()" class="hidden items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold bg-brand-600 hover:bg-brand-700 text-white shadow">
+                <button id="installBtn" onclick="installApp()" class="hidden items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold bg-brand-600 hover:bg-brand-700 text-white shadow">
                     <span>⬇️</span><span class="hidden sm:inline">Cài ứng dụng</span>
                 </button>
-                <!-- Daily Notification Toggle -->
+                
                 <button id="notifToggleBtn" onclick="toggleDailyNotification()" class="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all border border-slate-200 dark:border-slate-600">
                     <i data-lucide="bell" id="notifIcon" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
                     <span id="notifStatusText" class="hidden sm:inline">Bật thông báo</span>
                 </button>
 
-                <!-- Web Camera Scan Button -->
                 <button onclick="openScannerModal()" class="flex items-center gap-2 bg-pumpkin-600 hover:bg-pumpkin-700 text-white px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold shadow-sm transition-all active:scale-95">
                     <i data-lucide="camera" class="w-4 h-4"></i>
                     <span class="hidden sm:inline">Quét QR trên Web</span>
                     <span class="sm:hidden">Quét</span>
                 </button>
 
-                <!-- Admin Auth Button Container -->
                 <div id="authContainer">
                     <button id="loginBtn" onclick="openAdminLoginModal()" class="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 border border-slate-300 dark:border-slate-600 rounded-xl text-xs sm:text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
                         <i data-lucide="lock" class="w-4 h-4"></i>
@@ -273,8 +200,6 @@
 
     <!-- MAIN CONTENT CONTAINER -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 flex-1 w-full">
-
-        <!-- VIEW MODE 1: PUBLIC CUSTOMER LOOKUP VIEW (When opened via ?id=...) -->
         <div id="publicCustomerView" class="hidden max-w-2xl mx-auto">
             <div class="mb-4 flex items-center justify-between">
                 <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-brand-100 dark:bg-brand-950/60 text-brand-800 dark:text-brand-300 border border-brand-200 dark:border-brand-800">
@@ -285,9 +210,7 @@
                 </button>
             </div>
 
-            <!-- Public Product Detail Card -->
             <div class="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden">
-                <!-- Status Banner Top -->
                 <div id="publicStatusBanner" class="p-4 sm:p-6 text-white text-center transition-colors">
                     <div class="inline-flex p-3 rounded-full bg-white/20 backdrop-blur-md mb-2" id="publicStatusIconBox">
                         <i data-lucide="shield-check" class="w-8 h-8 text-white"></i>
@@ -297,7 +220,6 @@
                 </div>
 
                 <div class="p-4 sm:p-6 space-y-5 sm:space-y-6">
-                    <!-- Title & Category -->
                     <div>
                         <div class="flex items-center gap-2 mb-1">
                             <span class="text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300" id="publicCategory">Loại thực phẩm</span>
@@ -309,9 +231,7 @@
                         </p>
                     </div>
 
-                    <!-- Countdown Metric Grid -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <!-- Best Before Card -->
                         <div class="bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/60 rounded-2xl p-4">
                             <div class="flex items-center justify-between text-amber-800 dark:text-amber-300 text-xs font-semibold mb-1">
                                 <span class="flex items-center gap-1.5"><i data-lucide="sparkles" class="w-4 h-4 text-amber-600 dark:text-amber-400"></i> Ngon nhất trước:</span>
@@ -320,7 +240,6 @@
                             <div class="text-xs text-amber-700 dark:text-amber-400 mt-1" id="publicBestBeforeDate">Hạn: --</div>
                         </div>
 
-                        <!-- Safe Expiry Card -->
                         <div class="bg-rose-50/70 dark:bg-rose-950/30 border border-rose-200/80 dark:border-rose-800/60 rounded-2xl p-4">
                             <div class="flex items-center justify-between text-rose-800 dark:text-rose-300 text-xs font-semibold mb-1">
                                 <span class="flex items-center gap-1.5"><i data-lucide="shield-alert" class="w-4 h-4 text-rose-600 dark:text-rose-400"></i> An toàn tối đa đến:</span>
@@ -330,7 +249,6 @@
                         </div>
                     </div>
 
-                    <!-- Details Accordion / List -->
                     <div class="bg-slate-50 dark:bg-slate-700/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-700 space-y-3 text-xs sm:text-sm">
                         <div class="flex justify-between py-1 border-b border-slate-200/60 dark:border-slate-600">
                             <span class="text-slate-500 dark:text-slate-400">Thời gian sản xuất:</span>
@@ -342,7 +260,6 @@
                         </div>
                     </div>
 
-                    <!-- Notification Subscription Banner for Consumer -->
                     <div class="bg-brand-50 dark:bg-brand-950/40 rounded-2xl p-4 border border-brand-200 dark:border-brand-800 flex flex-col sm:flex-row items-center justify-between gap-3">
                         <div class="flex items-center gap-3 text-left">
                             <div class="w-10 h-10 rounded-xl bg-pumpkin-500 text-white flex items-center justify-center shrink-0">
@@ -358,26 +275,22 @@
                         </button>
                     </div>
 
-                    <!-- Generated QR Code View inside Public Page -->
                     <div class="pt-4 border-t border-slate-100 dark:border-slate-700 text-center">
                         <p class="text-xs font-medium text-slate-400 mb-3">Mã QR truy cập trực tiếp cho sản phẩm này</p>
                         <div id="publicQrContainer" class="flex justify-center p-3 bg-white rounded-2xl border border-slate-200 dark:border-slate-700 w-max mx-auto shadow-sm"></div>
                         <p class="text-[11px] font-mono text-slate-400 mt-2 break-all" id="publicDirectUrl">URL: ...</p>
-                    <div class="mt-3 flex flex-wrap items-center justify-center gap-2">
-                        <button onclick="downloadHighResQr('public')" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-brand-600 hover:bg-brand-700 text-white shadow-sm transition-colors">
-                            <i data-lucide="download" class="w-4 h-4"></i> Tải ảnh QR
-                        </button>
-                        <button onclick="shareCurrentProduct()" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600">📤 Chia sẻ sản phẩm</button>
-                    </div>
+                        <div class="mt-3 flex flex-wrap items-center justify-center gap-2">
+                            <button onclick="downloadHighResQr('public')" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-brand-600 hover:bg-brand-700 text-white shadow-sm transition-colors">
+                                <i data-lucide="download" class="w-4 h-4"></i> Tải ảnh QR
+                            </button>
+                            <button onclick="shareCurrentProduct()" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600">📤 Chia sẻ sản phẩm</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- VIEW MODE 2: MAIN USER & ADMIN MANAGEMENT VIEW -->
         <div id="adminView" class="space-y-6">
-
-            <!-- Customer Hero Banner (Solid Tone style) -->
             <div class="rounded-3xl p-4 sm:p-6 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-4" style="background-image:radial-gradient(circle at 92% 0%,rgba(149,205,232,.38),transparent 46%),radial-gradient(circle at 0% 100%,rgba(224,85,2,.40),transparent 42%),linear-gradient(135deg,#003198,#001d5c)">
                 <div class="space-y-1.5 text-center md:text-left">
                     <span class="inline-block px-3 py-0.5 rounded-full bg-white/20 text-xs font-bold tracking-wide uppercase">Tra cứu Realtime</span>
@@ -396,7 +309,6 @@
                 </div>
             </div>
 
-            <!-- Daily Status Digest Alert -->
             <div id="dailyDigestBanner" class="hidden bg-brand-700 text-white p-4 rounded-2xl shadow-lg relative overflow-hidden">
                 <div class="flex items-start gap-3">
                     <div class="p-2 bg-white/20 rounded-xl backdrop-blur-md shrink-0">
@@ -417,7 +329,6 @@
                 </div>
             </div>
 
-            <!-- Navigation Tabs for Admin -->
             <div id="adminTabHeader" class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
                 <div class="flex items-center gap-2">
                     <button onclick="switchAdminTab('inventory')" id="tabInvBtn" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-brand-600 text-white">
@@ -430,7 +341,6 @@
                 </div>
             </div>
 
-            <!-- Dashboard Overview Stats -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
                 <div class="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex items-center gap-3 sm:gap-4">
                     <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-azure-100 dark:bg-azure-300/15 text-brand-700 dark:text-azure-300 flex items-center justify-center shrink-0">
@@ -473,16 +383,13 @@
                 </div>
             </div>
 
-            <!-- Toolbar / Filters / Add Product -->
             <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex flex-col lg:flex-row gap-4 items-center justify-between">
                 <div class="grid grid-cols-2 sm:flex sm:flex-row sm:flex-wrap gap-2 sm:gap-3 w-full lg:w-auto flex-1">
-                    <!-- Search input -->
                     <div class="relative col-span-2 sm:col-span-1 flex-1 min-w-[180px]">
                         <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
                         <input type="text" id="searchInput" oninput="onSearchInput()" placeholder="Tìm tên sản phẩm, ID mã QR, mã vạch..." class="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all">
                     </div>
                     
-                    <!-- Category Filter -->
                     <select id="categoryFilter" onchange="onSearchInput()" class="w-full sm:w-auto min-w-0 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-sm rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500">
                         <option value="ALL">Tất cả danh mục</option>
                         <option value="Sữa & Chế phẩm">Sữa & Chế phẩm</option>
@@ -495,7 +402,6 @@
                         <option value="Khác">Khác</option>
                     </select>
 
-                    <!-- Status Filter -->
                     <select id="statusFilter" onchange="onFilterChanged()" class="w-full sm:w-auto min-w-0 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-sm rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500">
                         <option value="ALL">Tất cả trạng thái</option>
                         <option value="FRESH">Tươi ngon nhất</option>
@@ -503,7 +409,6 @@
                         <option value="EXPIRED">Đã hết hạn</option>
                     </select>
 
-                    <!-- Quick time filter -->
                     <select id="quickFilter" onchange="onFilterChanged()" class="w-full sm:w-auto min-w-0 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-sm rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500">
                         <option value="ALL">Mọi thời hạn</option>
                         <option value="EXPIRED">Đã hết hạn</option>
@@ -512,22 +417,19 @@
                         <option value="7D">Hết hạn trong 7 ngày</option>
                     </select>
 
-                    <!-- Sort -->
                     <select id="sortFilter" onchange="onFilterChanged()" class="w-full sm:w-auto min-w-0 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-sm rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500">
                         <option value="URGENT">Sắp xếp: Khẩn cấp nhất</option>
                         <option value="LATEST">Sắp xếp: Hạn xa nhất</option>
                     </select>
                 </div>
 
-                <!-- Add New Product Button -->
                 <button onclick="manualRefresh()" title="Làm mới dữ liệu" class="hidden sm:flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600">⟳ <span class="lg:inline hidden">Làm mới</span></button>
-                    <button id="addNewBtn" onclick="openAddModal()" class="w-full sm:w-auto flex items-center justify-center gap-2 bg-pumpkin-600 hover:bg-pumpkin-700 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm transition-all active:scale-95 shrink-0">
+                <button id="addNewBtn" onclick="openAddModal()" class="w-full sm:w-auto flex items-center justify-center gap-2 bg-pumpkin-600 hover:bg-pumpkin-700 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm transition-all active:scale-95 shrink-0">
                     <i data-lucide="plus" class="w-4 h-4"></i>
                     <span id="addNewBtnText">Đăng ký mã QR sản phẩm</span>
                 </button>
             </div>
 
-            <!-- Tab 1: Product Grid -->
             <div id="tabInventory" class="space-y-4">
                 <div id="productList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
                 <div id="skeletonList" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" aria-hidden="true"></div>
@@ -538,13 +440,11 @@
                 </div>
             </div>
 
-            <!-- Tab 2: Pending Approval Grid (Admin Mode) -->
             <div id="tabPending" class="hidden space-y-4">
                 <p class="text-xs text-slate-500 dark:text-slate-400">Danh sách đăng ký sản phẩm cần được kiểm duyệt từ Quản trị viên.</p>
                 <div id="pendingProductList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
             </div>
 
-            <!-- Empty State -->
             <div id="emptyState" class="hidden text-center py-16 bg-white dark:bg-slate-800 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
                 <div class="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-400">
                     <i data-lucide="qr-code" class="w-8 h-8"></i>
@@ -598,7 +498,6 @@
                 <input type="hidden" id="prodId">
                 <input type="hidden" id="isProposeForm" value="false">
                 
-                <!-- Product ID (Used for QR Link) -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Mã Định Danh QR (Product ID) *</label>
                     <div class="flex gap-2">
@@ -608,19 +507,16 @@
                     <p class="text-[11px] text-slate-400 mt-1">Hệ thống mã 6 chữ số hỗ trợ lưu trữ số lượng rất lớn sản phẩm.</p>
                 </div>
 
-                <!-- Product Name -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Tên Thực Phẩm *</label>
                     <input type="text" id="prodName" required placeholder="Ví dụ: Sữa tươi thanh trùng 1L" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500">
                 </div>
 
-                <!-- Barcode Number (Optional) -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Mã Vạch Sản Phẩm (EAN / Barcode)</label>
                     <input type="text" id="prodBarcode" placeholder="8934567890123" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 font-mono">
                 </div>
 
-                <!-- Category -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Loại Thực Phẩm *</label>
                     <select id="prodCategory" required class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-slate-200 text-sm rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500">
@@ -635,7 +531,6 @@
                     </select>
                 </div>
 
-                <!-- Lot Number & Mfg Date -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Số Lô Sản Xuất (Lot)</label>
@@ -647,7 +542,6 @@
                     </div>
                 </div>
 
-                <!-- Best Before & Safe Expiry -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wider mb-1">Ngon nhất đến ngày *</label>
@@ -659,7 +553,6 @@
                     </div>
                 </div>
 
-                <!-- Notes / Storage Instructions -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Hướng dẫn bảo quản</label>
                     <input type="text" id="prodNotes" placeholder="VD: Khay ngăn mát tủ lạnh, nhiệt độ 2-4°C" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500">
@@ -673,7 +566,7 @@
         </div>
     </div>
 
-    <!-- MODAL: QR CODE GENERATOR & PRINT / DOWNLOAD -->
+    <!-- MODAL: QR CODE GENERATOR -->
     <div id="qrModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl text-center relative border border-slate-100 dark:border-slate-700">
             <button onclick="closeQrModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1">
@@ -687,7 +580,6 @@
             <h3 class="font-bold text-slate-900 dark:text-white text-lg" id="qrModalTitle">Mã QR Sản Phẩm Cloud</h3>
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Quét bằng camera để xem thông tin chi tiết của sản phẩm.</p>
 
-            <!-- Render QR Code Image -->
             <div class="my-6 p-4 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-2xl flex flex-col items-center justify-center">
                 <div id="qrRenderBox" class="p-2 bg-white rounded-xl shadow-sm"></div>
                 <p class="text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-3 break-all max-w-full px-2" id="qrModalUrlText">URL...</p>
@@ -738,16 +630,13 @@
                 </button>
             </div>
 
-            <!-- Camera Display -->
             <div id="reader" class="w-full bg-slate-900 rounded-2xl overflow-hidden border-2 border-dashed border-brand-500/50 min-h-[250px] flex items-center justify-center text-slate-400 text-xs"></div>
 
-            <!-- Công cụ camera: đèn pin hỗ trợ quét thiếu sáng -->
             <div id="scanTools" class="justify-center mt-3" style="display:none">
                 <button id="torchBtn" onclick="toggleTorch()" style="display:none" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600">🔦 Bật / Tắt đèn pin</button>
             </div>
             <p class="text-xs text-slate-500 dark:text-slate-400 text-center mt-3">Đưa mã QR vào giữa khung camera để tra cứu ngay lập tức.</p>
 
-            <!-- Manual Lookup Input -->
             <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700">
                 <p class="text-xs font-semibold text-slate-600 dark:text-slate-300 mb-2">Hoặc nhập Product ID trên Cloud:</p>
                 <div class="flex gap-2">
@@ -782,15 +671,13 @@
         import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, onSnapshot, query, where, orderBy, startAfter, limit, getCountFromServer } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        // Vẽ icon an toàn: nếu thư viện icon không tải được, app vẫn chạy bình thường (chỉ thiếu icon)
         function safeIcons() { try { if (window.lucide) window.lucide.createIcons(); } catch (e) { console.warn("Lucide error:", e); } labelIconButtons(); }
 
-        // Rung nhẹ (haptic). Android hỗ trợ; iPhone không cho web rung nên chỉ có hiệu ứng hình.
         let iosHapticEl = null;
         function haptic(pattern) {
             if (localStorage.getItem('chromatech_haptics') === 'off') return;
             try { if (navigator.vibrate && navigator.vibrate(pattern)) return; } catch (e) {}
-            try {   // iPhone (iOS 17.4+): công tắc <input switch> tạo rung nhẹ khi được bấm trong thao tác của người dùng
+            try {
                 if (!iosHapticEl) {
                     const l = document.createElement('label');
                     l.setAttribute('aria-hidden', 'true');
@@ -803,7 +690,6 @@
             } catch (e) {}
         }
 
-        // Gắn nhãn cho các nút chỉ có icon (trợ năng + gợi ý khi rê chuột)
         const ICON_LABELS = { 'eye': 'Xem thông tin sản phẩm', 'edit-3': 'Sửa sản phẩm', 'trash-2': 'Xóa sản phẩm', 'x': 'Đóng', 'moon': 'Chuyển sang giao diện tối', 'sun': 'Chuyển sang giao diện sáng', 'copy': 'Sao chép liên kết', 'external-link': 'Mở liên kết', 'bell': 'Thông báo' };
         function labelIconButtons() {
             document.querySelectorAll('button:not([aria-label])').forEach(btn => {
@@ -815,7 +701,6 @@
             });
         }
 
-        // Cấu hình Firebase dự án fresh-track-dt
         const firebaseConfig = {
             apiKey: "AIzaSyA-X8rKO3JmIUIlEYu6npP_mFIdRNY44lo",
             authDomain: "fresh-track-dt.firebaseapp.com",
@@ -826,13 +711,11 @@
             measurementId: "G-MMQRLYB84B"
         };
 
-        // Quyền admin được xác định bằng Firebase Authentication + collection "admins" (không còn mã PIN trong source)
         let isAdminLoggedIn = false;
         let currentAdminEmail = '';
         let auth = null;
         let unsubscribeProducts = null;
 
-        // Chống chèn mã HTML/JS độc hại từ dữ liệu khách nhập (XSS)
         function esc(v) {
             return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
         }
@@ -844,7 +727,6 @@
         let html5QrcodeScanner = null;
         let notificationsEnabled = false;
 
-        // Lazy loading pagination control
         let currentDisplayLimit = 12;
 
         const ADMIN_PAGE = 12, ADMIN_SEARCH_PAGE = 40, CACHE_KEY = 'freshtrack_product_cache_v1';
@@ -856,12 +738,10 @@
         let currentPublicProd = null, tickCount = 0, searchTimer = null;
         let fbApp = null, deferredInstall = null, pushSyncTimer = null;
 
-        // >>> DÁN "Key pair" (VAPID key) lấy từ Firebase Console → Project settings → Cloud Messaging → Web Push certificates <<<
         const VAPID_KEY = "BEJCnSG8N_2575cenpVlsJ24EG-e1dsLTIvbCHJ0chHzZjlrh8sl4rHOv_E7d-gmSqkQj9VKgUW6VGUeSR5iPRU";
         const PUSH_TOKEN_KEY = 'freshtrack_push_token';
         const FCM_URL = "https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js";
 
-        // Khởi tạo Firebase Firestore
         function initFirebase() {
             try {
                 const app = initializeApp(firebaseConfig);
@@ -870,9 +750,8 @@
                 auth = getAuth(app);
 
                 updateSyncBadge('online', '🟢 Đã kết nối Cloud');
-                // Lắng nghe trạng thái đăng nhập; dữ liệu sản phẩm được tải sau khi biết người dùng là ai
                 onAuthStateChanged(auth, handleAuthStateChanged);
-                if (notificationsEnabled && isPushConfigured()) setTimeout(enablePush, 3000);   // làm mới token nếu bị đổi
+                if (notificationsEnabled && isPushConfigured()) setTimeout(enablePush, 3000);
             } catch (err) {
                 console.error("Firebase Connection Error:", err);
                 updateSyncBadge('offline', '🔴 Lỗi kết nối Cloud');
@@ -888,7 +767,6 @@
             }
         }
 
-        // ============ LỚP DỮ LIỆU: khách chỉ tải ID đã quét, admin phân trang phía server ============
         function localIso(d) { return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); }
         function readCache() { try { return JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); } catch (e) { return {}; } }
         function writeCache() { try { localStorage.setItem(CACHE_KEY, JSON.stringify(customerCache)); } catch (e) {} }
@@ -947,7 +825,6 @@
             if (isAdminLoggedIn) startAdminData(); else startCustomerData();
         }
 
-        // ----- KHÁCH: chỉ đọc các sản phẩm đã quét (getDoc theo ID) + cache offline -----
         function startCustomerData() {
             customerItems = deviceScannedIds.map(id => customerCache[id]).filter(Boolean);
             syncProducts();
@@ -990,7 +867,6 @@
             syncProducts(); renderProducts();
         }
 
-        // ----- ADMIN: phân trang bằng con trỏ (limit + startAfter), đếm bằng aggregation -----
         function startAdminData() {
             setStatsSkeleton();
             const pq = query(collection(db, 'products'), where('status', '==', 'pending'), limit(100));
@@ -1031,7 +907,6 @@
         function clientFiltersActive(f) { return !!f.search || f.cat !== 'ALL' || f.status === 'FRESH' || f.status === 'EAT_SOON'; }
         function adminMatchCount() { const f = getFilters(); return adminItems.filter(p => clientMatch(p, f, false)).length; }
 
-        // Quy lọc thời hạn/ trạng thái thành khoảng giá trị của "expiry" để Firestore lọc phía server
         function getServerBounds(f) {
             const now = new Date(), nowIso = localIso(now);
             let lo = null, hi = null;
@@ -1130,11 +1005,10 @@
             searchTimer = setTimeout(() => { if (adminHasMore && !adminLoading && adminMatchCount() < adminTarget) loadAdminPage(false); }, 400);
         }
 
-function updateSyncBadge(status, text) {
+        function updateSyncBadge(status, text) {
             const badge = document.getElementById('syncBadge');
             const textElem = document.getElementById('syncText');
             if (!badge || !textElem) return;
-
             textElem.innerText = text;
             if (status === 'online') {
                 badge.className = "hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800";
@@ -1143,7 +1017,6 @@ function updateSyncBadge(status, text) {
             }
         }
 
-        // Admin Auth Modal Logic with Instant Refresh
         window.openAdminLoginModal = function() {
             document.getElementById('adminEmailInput').value = '';
             document.getElementById('adminPasswordInput').value = '';
@@ -1158,21 +1031,14 @@ function updateSyncBadge(status, text) {
         window.submitAdminLogin = async function() {
             const email = document.getElementById('adminEmailInput').value.trim();
             const password = document.getElementById('adminPasswordInput').value;
-            if (!email || !password) {
-                showToast("Vui lòng nhập email và mật khẩu", "error");
-                return;
-            }
-            if (!auth) {
-                showToast("Chưa kết nối Firebase", "error");
-                return;
-            }
+            if (!email || !password) { showToast("Vui lòng nhập email và mật khẩu", "error"); return; }
+            if (!auth) { showToast("Chưa kết nối Firebase", "error"); return; }
 
             const btn = document.getElementById('adminLoginSubmitBtn');
             btn.disabled = true;
             try {
                 await signInWithEmailAndPassword(auth, email, password);
                 closeAdminLoginModal();
-                // Giao diện admin sẽ tự bật trong handleAuthStateChanged
             } catch (err) {
                 const messages = {
                     'auth/invalid-credential': 'Sai email hoặc mật khẩu',
@@ -1277,7 +1143,6 @@ function updateSyncBadge(status, text) {
             if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(e => console.warn('SW:', e));
         };
 
-        // ---- Làm mới dữ liệu (dùng cho vuốt xuống) ----
         window.refreshData = async function() {
             if (isAdminLoggedIn) await Promise.all([loadAdminPage(true), refreshAdminStats()]);
             else await loadCustomerProducts();
@@ -1288,7 +1153,6 @@ function updateSyncBadge(status, text) {
             }
         }
 
-        // ---- Vuốt xuống để làm mới như trên web (không cần thoát ra vào lại) ----
         function initPullToRefresh() {
             const THRESH = 70, MAX = 120;
             let startY = 0, pulling = false, dist = 0, busy = false, armed = false;
@@ -1317,7 +1181,7 @@ function updateSyncBadge(status, text) {
                 ind.style.transform = `translate(-50%,${dist - 80}px)`;
                 icon.style.transform = dist >= THRESH ? 'rotate(180deg)' : 'none';
                 text.textContent = dist >= THRESH ? 'Thả để làm mới' : 'Kéo để làm mới';
-                if (dist >= THRESH && !armed) {          // vừa kéo qua ngưỡng: rung nhẹ + nảy
+                if (dist >= THRESH && !armed) {
                     armed = true; haptic(18);
                     const box = ind.firstElementChild; box.style.animation = 'none'; void box.offsetWidth; box.style.animation = 'ptrPop .25s ease';
                 } else if (dist < THRESH && armed) armed = false;
@@ -1355,7 +1219,6 @@ function updateSyncBadge(status, text) {
             catch (e) { showToast(url, "info"); }
         }
 
-        // Thanh báo khi mất mạng; có mạng lại thì tự làm mới
         function initNetworkBanner() {
             const bar = document.createElement('div');
             bar.setAttribute('role', 'status');
@@ -1368,18 +1231,17 @@ function updateSyncBadge(status, text) {
             upd();
         }
 
-        // ---- Cài web thành ứng dụng (PWA) ----
         window.addEventListener('beforeinstallprompt', e => {
             e.preventDefault(); deferredInstall = e;
             const b = document.getElementById('installBtn'); b.classList.remove('hidden'); b.classList.add('flex');
         });
-        // ---- Cài ứng dụng dễ dàng trên mọi hệ điều hành ----
+
         const UA = navigator.userAgent;
         const IS_IOS = /iphone|ipad|ipod/i.test(UA) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
         const IS_IPAD = /ipad/i.test(UA) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
         const IS_ANDROID = /android/i.test(UA);
         const IOS_OTHER_BROWSER = /CriOS|FxiOS|EdgiOS|OPiOS/i.test(UA);
-        const IN_APP = /FBAN|FBAV|FB_IAB|Instagram|Zalo|Line\/|TikTok|musical_ly|MicroMessenger|; wv\)/i.test(UA);   // trình duyệt nhúng trong Zalo/Facebook/TikTok...
+        const IN_APP = /FBAN|FBAV|FB_IAB|Instagram|Zalo|Line\/|TikTok|musical_ly|MicroMessenger|; wv\)/i.test(UA);
         const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
         const INSTALL_DISMISS_KEY = 'chromatech_install_dismissed';
 
@@ -1389,7 +1251,6 @@ function updateSyncBadge(status, text) {
             showToast("Đã cài ChromaTech vào thiết bị!", "success");
         });
 
-        // Bấm nút: Android/máy tính hiện hộp cài đặt ngay (1 chạm); máy khác mở hướng dẫn đúng với thiết bị
         window.installApp = async function() {
             if (deferredInstall) {
                 deferredInstall.prompt();
@@ -1401,7 +1262,7 @@ function updateSyncBadge(status, text) {
             openInstallSheet();
         }
 
-        window.closeInstallSheet = closeInstallSheet;   // để nút onclick trong hộp cài đặt gọi được
+        window.closeInstallSheet = closeInstallSheet;
         function closeInstallSheet(rememberDismiss) {
             const el = document.getElementById('installSheet');
             if (el) el.remove();
@@ -1414,8 +1275,36 @@ function updateSyncBadge(status, text) {
             catch (e) { showToast(url, "info"); }
         }
 
-        window.openInChrome = function() {   // Android: thoát khỏi Zalo/Facebook, mở bằng Chrome
+        window.openInChrome = function() {
             location.href = `intent://${location.host}${location.pathname}?install=1#Intent;scheme=https;package=com.android.chrome;end`;
+        }
+
+        // Hàm mở Modal phát video hướng dẫn tải xuống cho 2 bản iOS
+        window.openVideoModal = function(iosType) {
+            const modal = document.getElementById('videoTutorialModal');
+            const titleEl = document.getElementById('videoModalTitle');
+            const descEl = document.getElementById('videoModalDesc');
+            const videoEl = document.getElementById('tutorialVideoPlayer');
+            
+            if (iosType === 'new') {
+                titleEl.innerText = "Hướng dẫn tải xuống trên iOS từ 16.4 trở lên";
+                descEl.innerText = "Xem video hướng dẫn chi tiết các bước thêm ứng dụng vào Màn hình chính trên iOS phiên bản mới.";
+                videoEl.src = "video_1.mp4"; // video cho bản mới (hoặc video_2 tùy ý)
+            } else {
+                titleEl.innerText = "Hướng dẫn tải xuống trên iOS dưới 16.4";
+                descEl.innerText = "Xem video hướng dẫn chi tiết cách cài đặt ứng dụng trên các phiên bản iOS cũ hơn.";
+                videoEl.src = "video_2.mp4"; // video cho bản cũ
+            }
+            modal.classList.remove('hidden');
+            videoEl.play().catch(e => console.log("Auto-play prevented:", e));
+        }
+
+        window.closeVideoModal = function() {
+            const modal = document.getElementById('videoTutorialModal');
+            const videoEl = document.getElementById('tutorialVideoPlayer');
+            videoEl.pause();
+            videoEl.src = "";
+            modal.classList.add('hidden');
         }
 
         function openInstallSheet() {
@@ -1443,6 +1332,17 @@ function updateSyncBadge(status, text) {
                     ${step(1, IS_IPAD ? "Bấm nút <b>Chia sẻ</b> (ô vuông có mũi tên ↑) ở <b>góc trên bên phải</b>" : (IOS_OTHER_BROWSER ? "Bấm nút <b>Chia sẻ</b> (ô vuông có mũi tên ↑) ở <b>thanh địa chỉ phía trên</b>" : "Bấm nút <b>Chia sẻ</b> (ô vuông có mũi tên ↑) ở <b>thanh dưới cùng</b> của Safari"))}
                     ${step(2, "Kéo xuống, chọn <b>Thêm vào Màn hình chính</b>")}
                     ${step(3, "Bấm <b>Thêm</b>. Xong! Mở ChromaTech từ màn hình chính.")}</ol>
+                    
+                    <!-- 2 nút xem video hướng dẫn tải xuống chia theo 2 bản iOS -->
+                    <div class="mt-4 pt-3 border-t border-slate-200 dark:border-slate-700 grid grid-cols-2 gap-2">
+                        <button onclick="openVideoModal('new')" class="py-2.5 px-3 rounded-xl bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800 text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-brand-100 transition-colors">
+                            <i data-lucide="play-circle" class="w-4 h-4"></i> Xem video iOS ≥ 16.4
+                        </button>
+                        <button onclick="openVideoModal('old')" class="py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-slate-200 transition-colors">
+                            <i data-lucide="play-circle" class="w-4 h-4"></i> Xem video iOS &lt; 16.4
+                        </button>
+                    </div>
+
                     <p class="mt-3 text-xs text-slate-500 dark:text-slate-400">Cần iPhone dùng iOS 16.4 trở lên để nhận thông báo từ ứng dụng.</p>`;
                 if (!IS_IPAD) arrow = IOS_OTHER_BROWSER ? `<div class="fixed top-2 right-6 text-4xl animate-bounce pointer-events-none">👆</div>` : `<div class="fixed bottom-1 left-1/2 -translate-x-1/2 text-4xl animate-bounce pointer-events-none">👇</div>`;
             } else {
@@ -1463,19 +1363,19 @@ function updateSyncBadge(status, text) {
                 ${body}
                 <div class="space-y-2">${actions}</div></div>${arrow}`;
             document.body.appendChild(el);
+            safeIcons();
         }
 
         function initInstallUI() {
             if (isStandalone()) return;
             const b = document.getElementById('installBtn');
-            b.classList.remove('hidden'); b.classList.add('flex');               // luôn có nút cài ở thanh đầu trang
-            if (new URLSearchParams(location.search).get('install')) { setTimeout(openInstallSheet, 1200); return; }   // link dành riêng cho việc cài: ?install=1
+            b.classList.remove('hidden'); b.classList.add('flex');
+            if (new URLSearchParams(location.search).get('install')) { setTimeout(openInstallSheet, 1200); return; }
             const last = +localStorage.getItem(INSTALL_DISMISS_KEY) || 0;
-            if (Date.now() - last < 7 * 864e5) return;                            // đã bấm "Để sau": 7 ngày không hỏi lại
+            if (Date.now() - last < 7 * 864e5) return;
             setTimeout(() => { if (!isStandalone() && !document.querySelector('div[id$="Modal"]:not(.hidden)')) openInstallSheet(); }, 7000);
         }
 
-        // ---- Push qua Firebase Cloud Messaging: nhận thông báo kể cả khi KHÔNG mở web ----
         function isPushConfigured() { return VAPID_KEY && !VAPID_KEY.startsWith('DÁN_'); }
 
         async function enablePush() {
@@ -1493,7 +1393,6 @@ function updateSyncBadge(status, text) {
             } catch (e) { console.error("Push error:", e); return 'error'; }
         }
 
-        // Lưu token + danh sách ID sản phẩm của thiết bị này để server biết cần nhắc gì
         async function syncPushIds() {
             const token = localStorage.getItem(PUSH_TOKEN_KEY);
             if (!token || !db) return false;
@@ -1508,7 +1407,6 @@ function updateSyncBadge(status, text) {
             if (token && db) { try { await deleteDoc(doc(db, 'pushTokens', token)); } catch (e) {} }
         }
 
-        // Nút Back/Forward của trình duyệt: đồng bộ lại giao diện theo URL
         window.addEventListener('popstate', handleRoutingAndRender);
         document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
 
@@ -1520,7 +1418,6 @@ function updateSyncBadge(status, text) {
             checkDailyDigest();
         }
 
-        // Mỗi phút: cập nhật trạng thái theo thời gian thực + kiểm tra thông báo
         function tick() {
             tickCount++;
             const pv = document.getElementById('publicCustomerView');
@@ -1531,7 +1428,6 @@ function updateSyncBadge(status, text) {
             if (isAdminLoggedIn && tickCount % 5 === 0) refreshAdminStats();
         }
 
-        // ================= THÔNG BÁO HẠN DÙNG =================
         const NOTIF_KEY = 'freshtrack_notified_v1';
         let notifiedMap = {};
         try { notifiedMap = JSON.parse(localStorage.getItem(NOTIF_KEY) || '{}'); } catch (e) {}
@@ -1565,8 +1461,8 @@ function updateSyncBadge(status, text) {
             updateNotifUI();
             const pushRes = await enablePush();
             if (pushRes === 'ok') showToast("Đã bật thông báo hằng ngày: bạn sẽ nhận được cả khi không mở web!", "success");
-            else if (pushRes === 'syncfail') showToast("Không lưu được đăng ký thông báo lên máy chủ. Hãy kiểm tra Rules Firestore (mục pushTokens) rồi bật lại.", "error");
-            else if (pushRes === 'noconfig') showToast("Đã bật nhắc nhở (chỉ khi đang mở web). Chủ web cần cài VAPID key để gửi thông báo nền.", "warning");
+            else if (pushRes === 'syncfail') showToast("Không lưu được đăng ký thông báo lên máy chủ. Hãy kiểm tra Rules Firestore rồi bật lại.", "error");
+            else if (pushRes === 'noconfig') showToast("Đã bật nhắc nhở (chỉ khi đang mở web).", "warning");
             else if (/iphone|ipad|ipod/i.test(navigator.userAgent)) showToast("iPhone: bấm Chia sẻ → Thêm vào Màn hình chính, mở ứng dụng từ biểu tượng đó rồi bật lại thông báo.", "warning");
             else showToast("Thiết bị chưa hỗ trợ thông báo nền; vẫn nhắc khi đang mở web.", "warning");
             const sent = await checkAndNotify(true);
@@ -1591,7 +1487,6 @@ function updateSyncBadge(status, text) {
             }
         }
 
-        // Mức cảnh báo: 3 = đã hết hạn, 2 = còn dưới 24 giờ, 1 = quá hạn ngon nhất (nên dùng ngay)
         function notifLevel(p) {
             const now = Date.now(), exp = new Date(p.expiry).getTime(), bb = new Date(p.bestBefore).getTime();
             if (isNaN(exp)) return 0;
@@ -1607,7 +1502,7 @@ function updateSyncBadge(status, text) {
                 if (p.status === 'pending') return;
                 const lvl = notifLevel(p), sig = p.expiry + '|' + p.bestBefore, rec = notifiedMap[p.id];
                 const prev = rec && rec.sig === sig ? rec.level : 0;
-                if (lvl > 0 && (force || lvl > prev)) hits.push({ p, lvl });   // chỉ báo khi mức cảnh báo tăng lên
+                if (lvl > 0 && (force || lvl > prev)) hits.push({ p, lvl });
                 if (lvl > 0) notifiedMap[p.id] = { sig, level: lvl };
             });
             try { localStorage.setItem(NOTIF_KEY, JSON.stringify(notifiedMap)); } catch (e) {}
@@ -1615,7 +1510,7 @@ function updateSyncBadge(status, text) {
             hits.sort((a, b) => b.lvl - a.lvl);
             const LV = { 3: 'Đã hết hạn', 2: 'Còn dưới 24 giờ', 1: 'Nên dùng ngay' };
             const nm = h => h.p.name || h.p.id;
-            if (hits.length === 1) return sendNotification(nm(hits[0]), LV[hits[0].lvl], getProductDirectUrl(hits[0].p.id));   // tên sản phẩm ở tiêu đề → hiển thị đậm
+            if (hits.length === 1) return sendNotification(nm(hits[0]), LV[hits[0].lvl], getProductDirectUrl(hits[0].p.id));
             const title = hits.slice(0, 2).map(nm).join(' · ') + (hits.length > 2 ? ` +${hits.length - 2}` : '');
             const body = hits.slice(0, 4).map(h => `• ${nm(h)}: ${LV[h.lvl]}`).join('\n') + (hits.length > 4 ? `\n… và ${hits.length - 4} sản phẩm khác` : '');
             return sendNotification(title, body, '');
@@ -1623,13 +1518,13 @@ function updateSyncBadge(status, text) {
 
         async function sendNotification(title, body, url) {
             const opts = { body, icon: 'icon-192.png', badge: 'icon-192.png', tag: 'chromatech-alert', renotify: true, data: { url: url || '' } };
-            try {   // Cách chuẩn, chạy được trên Android/PWA: hiển thị qua service worker
+            try {
                 if ('serviceWorker' in navigator) {
                     const reg = await Promise.race([navigator.serviceWorker.ready, new Promise(r => setTimeout(() => r(null), 4000))]);
                     if (reg) { await reg.showNotification(title, opts); return true; }
                 }
             } catch (e) { console.warn("SW notification:", e); }
-            try {   // Dự phòng cho máy tính
+            try {
                 const n = new Notification(title, { body, tag: opts.tag, renotify: true });
                 n.onclick = () => { window.focus(); if (url) window.location.href = url; n.close(); };
                 return true;
@@ -1645,26 +1540,11 @@ function updateSyncBadge(status, text) {
             const bestBeforeDate = new Date(prod.bestBefore);
 
             if (now > expiryDate) {
-                return { 
-                    code: 'EXPIRED', 
-                    label: 'ĐÃ HẾT HẠN - KHÔNG AN TOÀN', 
-                    badgeBg: 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800', 
-                    bannerBg: 'bg-rose-600'
-                };
+                return { code: 'EXPIRED', label: 'ĐÃ HẾT HẠN - KHÔNG AN TOÀN', badgeBg: 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800', bannerBg: 'bg-rose-600' };
             } else if (now > bestBeforeDate) {
-                return { 
-                    code: 'EAT_SOON', 
-                    label: 'NÊN DÙNG NGAY', 
-                    badgeBg: 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800', 
-                    bannerBg: 'bg-amber-500'
-                };
+                return { code: 'EAT_SOON', label: 'NÊN DÙNG NGAY', badgeBg: 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800', bannerBg: 'bg-amber-500' };
             } else {
-                return { 
-                    code: 'FRESH', 
-                    label: 'TƯƠI NGON RẤT AN TOÀN', 
-                    badgeBg: 'bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800', 
-                    bannerBg: 'bg-teal-600'
-                };
+                return { code: 'FRESH', label: 'TƯƠI NGON RẤT AN TOÀN', badgeBg: 'bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800', bannerBg: 'bg-teal-600' };
             }
         }
 
@@ -1705,9 +1585,7 @@ function updateSyncBadge(status, text) {
                 if (window.location.search) {
                     window.history.pushState({}, document.title, window.location.pathname);
                 }
-            } catch (err) {
-                console.warn("Push state warning:", err);
-            }
+            } catch (err) { console.warn("Push state warning:", err); }
             renderProducts();
         }
 
@@ -1723,7 +1601,7 @@ function updateSyncBadge(status, text) {
                 document.getElementById('tabInvBtn').className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-brand-600 text-white";
                 document.getElementById('tabPenBtn').className = (isAdminLoggedIn ? "" : "hidden ") + "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 relative";
             } else {
-                if (!isAdminLoggedIn) return; // khách không được mở tab chờ duyệt
+                if (!isAdminLoggedIn) return;
                 document.getElementById('tabInventory').classList.add('hidden');
                 document.getElementById('tabPending').classList.remove('hidden');
                 document.getElementById('tabPenBtn').className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-brand-600 text-white relative";
@@ -1757,7 +1635,7 @@ function updateSyncBadge(status, text) {
                 const snap = await getDoc(doc(db, 'products', key));
                 if (snap.exists() && snap.data().status !== 'pending') return { id: snap.id, ...snap.data() };
             } catch (e) { console.warn("Cloud fetch (id):", e); }
-            try {   // thử tra theo mã vạch
+            try {
                 const qs = await getDocs(query(collection(db, 'products'), where('barcode', '==', key), where('status', '==', 'approved'), limit(1)));
                 if (!qs.empty) return { id: qs.docs[0].id, ...qs.docs[0].data() };
             } catch (e) { console.warn("Cloud fetch (barcode):", e); }
@@ -1781,7 +1659,6 @@ function updateSyncBadge(status, text) {
             document.getElementById('publicCustomerView').classList.remove('hidden');
             currentPublicProd = prod;
 
-            // Cập nhật URL: thêm mới nếu chưa có ?id, thay thế nếu đang là mã vạch (tránh kẹt vòng lặp nút Back)
             try {
                 const curId = new URLSearchParams(window.location.search).get('id');
                 const newUrl = `${window.location.pathname}?id=${encodeURIComponent(prod.id)}`;
@@ -1810,7 +1687,6 @@ function updateSyncBadge(status, text) {
             if (window.hideSplash) window.hideSplash(true);
         }
 
-        // RENDER PRODUCTS GRID (Optimized for Device storage & Admin pagination)
         window.renderProducts = function() {
             const container = document.getElementById('productList');
             const pendingContainer = document.getElementById('pendingProductList');
@@ -1825,7 +1701,6 @@ function updateSyncBadge(status, text) {
             let filtered, paginatedItems;
 
             if (isAdminLoggedIn) {
-                // Admin: dữ liệu đã được lọc/sắp xếp/phân trang bởi server; thống kê lấy từ refreshAdminStats()
                 filtered = adminItems.filter(p => clientMatch(p, f, false));
                 paginatedItems = filtered;
             } else {
@@ -1857,7 +1732,7 @@ function updateSyncBadge(status, text) {
                 link.classList.add('hidden');
                 if (isAdminLoggedIn && needIndex) {
                     document.getElementById('emptyStateTitle').innerText = "Cần tạo chỉ mục Firestore (làm 1 lần)";
-                    document.getElementById('emptyStateSub').innerText = "Tạo 2 chỉ mục cho collection products: (status, expiry) và (status, bestBefore), đợi vài phút rồi tải lại trang.";
+                    document.getElementById('emptyStateSub').innerText = "Tạo 2 chỉ mục cho collection products: (status, expiry) và (status, bestBefore).";
                     if (indexLink.startsWith('https://console.firebase.google.com/')) { link.href = indexLink; link.classList.remove('hidden'); }
                 } else if (isAdminLoggedIn || customerItems.length > 0) {
                     document.getElementById('emptyStateTitle').innerText = "Không có sản phẩm phù hợp bộ lọc";
@@ -1935,7 +1810,6 @@ function updateSyncBadge(status, text) {
                 container.appendChild(card);
             });
 
-            // Render Pending Queue for Admin with Full Details Inspection
             if (isAdminLoggedIn) {
                 pendingProducts.forEach(p => {
                     const card = document.createElement('div');
@@ -1970,7 +1844,6 @@ function updateSyncBadge(status, text) {
             else { currentDisplayLimit += 12; renderProducts(); }
         }
 
-        // INSPECT PENDING DETAILS MODAL LOGIC
         window.inspectPendingProduct = function(id) {
             const prod = products.find(p => p.id === id);
             if (!prod) return;
@@ -2029,7 +1902,6 @@ function updateSyncBadge(status, text) {
             }
         }
 
-        // Form Open Handlers & 6-Digit Generator
         window.openAddModal = function() {
             document.getElementById('productForm').reset();
             document.getElementById('prodId').value = '';
@@ -2067,7 +1939,6 @@ function updateSyncBadge(status, text) {
             document.getElementById('addModal').classList.add('hidden');
         }
 
-        // Upgraded Code Generation to 6 Digits (e.g., sp-012345)
         window.generateRandomId = function() {
             const rand6Digit = String(Math.floor(Math.random() * 1000000)).padStart(6, '0');
             const inputEl = document.getElementById('prodCustomId');
@@ -2078,22 +1949,15 @@ function updateSyncBadge(status, text) {
 
         window.saveProductToCloud = async function(e) {
             e.preventDefault();
-            if (!db) {
-                showToast("Chưa kết nối Firebase", "error");
-                return;
-            }
+            if (!db) { showToast("Chưa kết nối Firebase", "error"); return; }
 
             const isPropose = document.getElementById('isProposeForm').value === "true";
-            // Lay ID va xoa tat ca khoang trang thua
             const hiddenId = (document.getElementById('prodId').value || '').trim();
             const inputId = (document.getElementById('prodCustomId').value || '').trim();
             let rawId = inputId || hiddenId;
             const customId = rawId.replace(/[\s\/\\'"<>]+/g, '');
 
-            if (!customId) {
-                showToast("Vui lòng nhập hoặc tạo Mã Định Danh QR hợp lệ!", "error");
-                return;
-            }
+            if (!customId) { showToast("Vui lòng nhập hoặc tạo Mã Định Danh QR hợp lệ!", "error"); return; }
 
             const name = document.getElementById('prodName').value.trim();
             const barcode = document.getElementById('prodBarcode').value.trim();
@@ -2118,43 +1982,29 @@ function updateSyncBadge(status, text) {
             try {
                 const docRef = doc(db, 'products', customId);
                 const isEditing = !!hiddenId;
-                // Chỉ admin được đọc để kiểm tra trùng; khách sẽ bị Rules từ chối nếu mã đã tồn tại
                 if (isAdminLoggedIn && !isEditing) {
                     const existing = await getDoc(docRef);
                     if (existing.exists()) {
-                        showToast(`Mã "${customId}" đã tồn tại, hãy bấm "Tạo 6 chữ số" để lấy mã khác!`, "error");
+                        showToast(`Mã "${customId}" đã tồn tại, hãy bấm "Tạo 6 chữ số"!`, "error");
                         return;
                     }
                 }
-                const payload = {
-                    name,
-                    barcode,
-                    category,
-                    lot,
-                    mfgDate,
-                    bestBefore,
-                    expiry,
-                    notes,
-                    status: targetStatus,
-                    updatedAt: new Date().toISOString()
-                };
+                const payload = { name, barcode, category, lot, mfgDate, bestBefore, expiry, notes, status: targetStatus, updatedAt: new Date().toISOString() };
                 if (isAdminLoggedIn) {
                     await setDoc(docRef, payload, { merge: true });
                 } else {
-                    await setDoc(docRef, payload);   // khách chỉ được TẠO MỚI bản ghi "pending"
+                    await setDoc(docRef, payload);
                 }
 
                 saveScannedIdToDevice(customId);
-                showToast(isPropose ? "Đã gửi đăng ký! Sản phẩm sẽ hiển thị sau khi Admin duyệt." : "Đã lưu thành công lên Firebase!", "success");
+                showToast(isPropose ? "Đã gửi đăng ký chờ duyệt!" : "Đã lưu thành công lên Firebase!", "success");
                 closeAddModal();
                 afterAdminMutation();
             } catch (err) {
                 console.error("Save error:", err);
                 let hint = err.message;
                 if (err && err.code === 'permission-denied') {
-                    hint = isAdminLoggedIn
-                        ? "Firestore từ chối ghi dữ liệu (kiểm tra Rules và collection admins)"
-                        : "Mã này có thể đã tồn tại hoặc dữ liệu không hợp lệ. Hãy bấm \"Tạo 6 chữ số\" để lấy mã mới";
+                    hint = isAdminLoggedIn ? "Firestore từ chối ghi dữ liệu" : "Mã đã tồn tại hoặc không hợp lệ.";
                 }
                 showToast("Lỗi lưu Firestore: " + hint, "error");
             } finally {
@@ -2209,7 +2059,6 @@ function updateSyncBadge(status, text) {
             document.getElementById('confirmModal').classList.add('hidden');
         }
 
-        // QR MODAL
         let activeQrId = "", activeQrName = "";
 
         window.openQrModal = function(id) {
@@ -2226,20 +2075,12 @@ function updateSyncBadge(status, text) {
 
             const qrBox = document.getElementById('qrRenderBox');
             qrBox.innerHTML = '';
-            new QRCode(qrBox, {
-                text: directUrl,
-                width: 200,
-                height: 200,
-                colorDark : "#000000",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.M
-            });
+            new QRCode(qrBox, { text: directUrl, width: 200, height: 200, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.M });
 
             document.getElementById('qrModal').classList.remove('hidden');
             safeIcons();
         }
 
-        // Xuất ảnh PNG độ phân giải cao (600x650px) kèm viền trắng chuẩn (Quiet Zone) để quét nhạy 100%
         window.downloadHighResQr = function(prodId, prodName) {
             if (prodId === 'public') {
                 prodId = currentPublicProd?.id;
@@ -2252,25 +2093,14 @@ function updateSyncBadge(status, text) {
             const directUrl = getProductDirectUrl(prodId);
 
             const tempDiv = document.createElement('div');
-            const qr = new QRCode(tempDiv, {
-                text: directUrl,
-                width: 500,
-                height: 500,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
-            });
+            new QRCode(tempDiv, { text: directUrl, width: 500, height: 500, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H });
 
             setTimeout(() => {
                 let srcImg = tempDiv.querySelector('canvas') || tempDiv.querySelector('img');
-                if (!srcImg) {
-                    showToast("Không thể tạo ảnh QR, vui lòng thử lại", "error");
-                    return;
-                }
+                if (!srcImg) { showToast("Không thể tạo ảnh QR", "error"); return; }
 
                 const processAndDownload = (imgElem) => {
-                    const pad = 50;
-                    const labelHeight = 50;
+                    const pad = 50, labelHeight = 50;
                     const outCanvas = document.createElement('canvas');
                     const w = imgElem.naturalWidth || imgElem.width || 500;
                     const h = imgElem.naturalHeight || imgElem.height || 500;
@@ -2280,7 +2110,6 @@ function updateSyncBadge(status, text) {
                     const ctx = outCanvas.getContext('2d');
                     ctx.fillStyle = '#ffffff';
                     ctx.fillRect(0, 0, outCanvas.width, outCanvas.height);
-
                     ctx.drawImage(imgElem, pad, pad, w, h);
 
                     ctx.fillStyle = '#0f172a';
@@ -2325,7 +2154,6 @@ function updateSyncBadge(status, text) {
             if (activeQrUrl) window.open(activeQrUrl, '_blank');
         }
 
-        // WEB CAMERA SCANNER
         window.openScannerModal = function() {
             document.getElementById('scannerModal').classList.remove('hidden');
             document.getElementById('scanTools').style.display = 'none';
@@ -2340,23 +2168,16 @@ function updateSyncBadge(status, text) {
                 if (!html5QrcodeScanner) {
                     const F = window.Html5QrcodeSupportedFormats;
                     html5QrcodeScanner = new Html5Qrcode("reader", {
-                        // Chỉ dò các định dạng cần thiết -> giảm tải CPU, tăng tốc độ bắt nét cực nhanh
                         formatsToSupport: F ? [F.QR_CODE, F.EAN_13, F.EAN_8, F.UPC_A, F.CODE_128, F.CODE_39] : undefined,
-                        // Ưu tiên bộ giải mã phần cứng gốc (BarcodeDetector) ngang các app chuyên dụng
                         experimentalFeatures: { useBarCodeDetectorIfSupported: true },
                         verbose: false
                     });
                 }
-                // Vùng quét rộng 90% khung hình giúp bắt mã tức thì mà không cần căn chỉnh quá khắt khe
                 const qrbox = (w, h) => {
                     const side = Math.max(180, Math.floor(Math.min(w, h) * 0.9));
                     return { width: side, height: side };
                 };
-                const scanConfig = {
-                    fps: 30,
-                    qrbox,
-                    disableFlip: false
-                };
+                const scanConfig = { fps: 30, qrbox, disableFlip: false };
                 try {
                     await html5QrcodeScanner.start(
                         { facingMode: "environment" },
@@ -2373,7 +2194,6 @@ function updateSyncBadge(status, text) {
                         onScanFailure
                     );
                 } catch (e1) {
-                    console.warn("Scanner: chuyển sang cấu hình tương thích", e1);
                     await html5QrcodeScanner.start({ facingMode: "environment" }, scanConfig, onScanSuccess, onScanFailure);
                 }
                 setupScanTools();
@@ -2396,6 +2216,7 @@ function updateSyncBadge(status, text) {
             } catch (e) { console.warn("Camera capabilities:", e); }
             tools.style.display = 'none';
         }
+
         window.toggleTorch = async function() {
             try {
                 torchOn = !torchOn;
@@ -2439,7 +2260,6 @@ function updateSyncBadge(status, text) {
             }
         }
 
-        // DAILY DIGEST & TOAST
         function checkDailyDigest() {
             const now = new Date();
             const dateElem = document.getElementById('todayDateStr');
@@ -2500,5 +2320,30 @@ function updateSyncBadge(status, text) {
             }, 3500);
         }
     </script>
+
+    <!-- MODAL: HIỂN THỊ VIDEO HƯỚNG DẪN TẢI XUỐNG -->
+    <div id="videoTutorialModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[90] flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full p-5 shadow-2xl relative border border-slate-200 dark:border-slate-700 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
+                <div>
+                    <h3 class="font-bold text-slate-900 dark:text-white text-base sm:text-lg" id="videoModalTitle">Video Hướng Dẫn Tải Xuống</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5" id="videoModalDesc">Xem các bước trực quan trên thiết bị</p>
+                </div>
+                <button onclick="closeVideoModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-xl bg-slate-100 dark:bg-slate-700">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <div class="w-full bg-slate-950 rounded-2xl overflow-hidden aspect-video flex items-center justify-center relative shadow-inner">
+                <video id="tutorialVideoPlayer" class="w-full h-full object-contain" controls playsinline></video>
+            </div>
+
+            <div class="text-center pt-1">
+                <button onclick="closeVideoModal()" class="w-full py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 font-bold text-xs sm:text-sm rounded-xl transition-colors">
+                    Đóng video
+                </button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
