@@ -284,6 +284,7 @@
                                 <i data-lucide="download" class="w-4 h-4"></i> Tải ảnh QR
                             </button>
                             <button onclick="shareCurrentProduct()" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600">📤 Chia sẻ sản phẩm</button>
+                        <button id="publicLocalDeleteBtn" onclick="removeLocalProduct()" class="hidden inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-950/70 border border-rose-200 dark:border-rose-800">🗑️ Xóa khỏi máy</button>
                         </div>
                     </div>
                 </div>
@@ -767,6 +768,57 @@
             }
         }
 
+// ---- Xóa sản phẩm khỏi MÁY NGƯỜI DÙNG (chỉ xóa local, không đụng đến dữ liệu trên hệ thống) ----
+        window.removeLocalProduct = function(id) {
+            if (isAdminLoggedIn) return;
+            id = id || (currentPublicProd && currentPublicProd.id);
+            if (!id) return;
+            const prod = products.find(p => p.id === id) || currentPublicProd || { id, name: id };
+            const old = document.getElementById('localDeleteSheet'); if (old) old.remove();
+            const el = document.createElement('div');
+            el.id = 'localDeleteSheet';
+            el.className = 'fixed inset-0 z-[80] flex items-end sm:items-center justify-center bg-slate-950/60 p-3';
+            el.addEventListener('click', e => { if (e.target === el) el.remove(); });
+            el.innerHTML = `<div class="w-full max-w-md bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-3xl shadow-2xl p-5 space-y-4" style="margin-bottom:env(safe-area-inset-bottom,0px)">
+                <div class="flex items-start gap-3">
+                    <div class="w-11 h-11 shrink-0 rounded-2xl bg-rose-100 dark:bg-rose-950/60 flex items-center justify-center text-xl">🗑️</div>
+                    <div class="min-w-0"><h3 class="text-lg font-extrabold leading-tight">Xóa khỏi thiết bị này?</h3>
+                    <p id="ldsName" class="text-sm font-semibold text-brand-700 dark:text-brand-300 mt-1 break-words"></p></div>
+                </div>
+                <p class="text-sm text-slate-600 dark:text-slate-300">Sản phẩm chỉ bị xóa khỏi <b>danh sách trên máy bạn</b> và không còn nhắc hạn dùng. Dữ liệu trên hệ thống <b>không bị ảnh hưởng</b>, bạn có thể quét lại mã QR để thêm lại bất cứ lúc nào.</p>
+                <div class="space-y-2">
+                    <button id="ldsOk" class="w-full py-3 rounded-2xl font-bold text-sm bg-rose-600 hover:bg-rose-700 text-white shadow-md">Xóa khỏi máy</button>
+                    <button id="ldsCancel" class="w-full py-3 rounded-2xl font-bold text-sm bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200">Hủy</button>
+                </div></div>`;
+            document.body.appendChild(el);
+            el.querySelector('#ldsName').textContent = prod.name || id;
+            el.querySelector('#ldsCancel').onclick = () => el.remove();
+            el.querySelector('#ldsOk').onclick = () => { el.remove(); doRemoveLocal(id); };
+        }
+
+        function doRemoveLocal(id) {
+            deviceScannedIds = deviceScannedIds.filter(x => x !== id);
+            localStorage.setItem('freshtrack_scanned_ids', JSON.stringify(deviceScannedIds));
+            delete customerCache[id]; writeCache();
+            customerItems = customerItems.filter(p => p.id !== id);
+            delete notifiedMap[id];
+            try { localStorage.setItem(NOTIF_KEY, JSON.stringify(notifiedMap)); } catch (e) {}
+            syncProducts();
+            schedulePushSync();   // báo máy chủ ngừng nhắc sản phẩm này cho thiết bị
+
+            const pv = document.getElementById('publicCustomerView');
+            if (pv && !pv.classList.contains('hidden') && currentPublicProd && currentPublicProd.id === id) {
+                currentPublicProd = null;
+                try { window.history.replaceState({}, document.title, window.location.pathname); } catch (e) {}   // tránh bấm Back lại thêm sản phẩm vào danh sách
+                window.switchToAdminView();
+            } else {
+                renderProducts();
+            }
+            checkDailyDigest();
+            haptic(25);
+            showToast("Đã xóa khỏi máy. Quét lại mã QR để thêm lại.", "success");
+        }
+
         function localIso(d) { return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); }
         function readCache() { try { return JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); } catch (e) { return {}; } }
         function writeCache() { try { localStorage.setItem(CACHE_KEY, JSON.stringify(customerCache)); } catch (e) {} }
@@ -1162,7 +1214,7 @@
             ind.innerHTML = '<div class="flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-300 shadow-lg border border-slate-200 dark:border-slate-600 text-xs font-bold" style="margin-top:calc(env(safe-area-inset-top,0px) + 12px)"><span id="ptrIcon" style="display:inline-block;transition:transform .2s">↓</span><span id="ptrText">Kéo để làm mới</span></div>';
             document.body.appendChild(ind);
             const icon = ind.querySelector('#ptrIcon'), text = ind.querySelector('#ptrText');
-            const blocked = () => !!document.querySelector('div[id$="Modal"]:not(.hidden)');
+            const blocked = () => !!document.querySelector('div[id$="Modal"]:not(.hidden), #localDeleteSheet, #installSheet');
             const atTop = () => (window.scrollY || document.documentElement.scrollTop || 0) <= 0;
             const hide = () => { ind.style.transition = 'transform .2s'; ind.style.transform = 'translate(-50%,-80px)'; icon.classList.remove('animate-spin'); icon.textContent = '↓'; icon.style.transform = 'none'; };
 
@@ -1659,6 +1711,8 @@
             document.getElementById('adminView').classList.add('hidden');
             document.getElementById('publicCustomerView').classList.remove('hidden');
             currentPublicProd = prod;
+            const lb = document.getElementById('publicLocalDeleteBtn');
+            if (lb) lb.classList.toggle('hidden', isAdminLoggedIn || !deviceScannedIds.includes(prod.id));
 
             try {
                 const curId = new URLSearchParams(window.location.search).get('id');
@@ -1804,7 +1858,11 @@
                             <button onclick="confirmDeleteProduct('${esc(p.id)}')" title="Xóa" class="p-1.5 text-slate-600 dark:text-slate-300 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-slate-600 rounded-lg transition-colors">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </button>
-                            ` : ''}
+                            ` : `
+                            <button onclick="removeLocalProduct('${esc(p.id)}')" title="Xóa khỏi máy" aria-label="Xóa khỏi máy" class="p-1.5 text-slate-600 dark:text-slate-300 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-slate-600 rounded-lg transition-colors">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                            `}
                         </div>
                     </div>
                 `;
